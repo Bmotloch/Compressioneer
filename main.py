@@ -74,6 +74,19 @@ def is_gray(img_path):
     return False
 
 
+def save_pgm(filename, image):
+    with open(filename, 'w') as f:
+        f.write("P2\n")
+        f.write("# ISA certified\n")
+        f.write("{} {}\n".format(image.shape[1], image.shape[0]))
+        f.write("255\n")
+
+        for row in image:
+            for pixel in row:
+                f.write("{} ".format(int(pixel)))
+            f.write("\n")
+
+
 if __name__ == "__main__":
     input_image_path = 'baboon.ascii.pgm'
     output_image_path = 'baboon_comp.pgm'
@@ -81,7 +94,7 @@ if __name__ == "__main__":
     block_size = 4
     compressed_image = compress_image(input_image_path, quality, block_size)
 
-    cv2.imwrite(output_image_path, compressed_image)
+    save_pgm(output_image_path,compressed_image)
 
     print("Image compressed and saved successfully.")
 
