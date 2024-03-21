@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter1d
+from scipy.fft import dctn, idctn
 
 
 def compress_image(image_path, quality_=50, block_size_=4):
@@ -24,38 +26,28 @@ def compress_image(image_path, quality_=50, block_size_=4):
         for j in range(0, width, block_size_):
             # potrzebny algorytm na wygladzanie miedzy blokami, to raczej nie dziala
             # Smooth along horizontal block boundaries
-            if j + block_size_ < width:
-                compressed_img[i:i + block_size_, j + block_size_ - 1] = \
-                    (compressed_img[i:i + block_size_, j + block_size_ - 1] +
-                     compressed_img[i:i + block_size_, j + block_size_]) // 2
-
-            # Smooth along vertical block boundaries
-            if i + block_size_ < height:
-                compressed_img[i + block_size_ - 1, j:j + block_size_] = \
-                    (compressed_img[i + block_size_ - 1, j:j + block_size_] +
-                     compressed_img[i + block_size_, j:j + block_size_]) // 2
             block = img[i:i + block_size_, j:j + block_size_]
             block = np.float32(block)
-            # print('float')
-            # print(block)
-            dct_block = cv2.dct(block)
+            dct_block = dctn(block, norm='ortho')
             dct_block = np.int32(dct_block)
-            # print('dct')
-            # print(dct_block)
-            quantization_4_4 = [[16, 14, 12, 10],
-                                [14, 12, 10, 8],
-                                [12, 10, 8, 6],
-                                [10, 8, 6, 4]]
-            dct_block_quantized = np.divide(dct_block, quantization_4_4)
-            # print('quant')
-            # print(dct_block_quantized)
-            # dct_block_quantized = np.round(dct_block / quality_) * quality_
-            compressed_block = cv2.dct(dct_block_quantized, cv2.DCT_INVERSE)
-            # print('inverse dct')
-            # print(compressed_block)
-            compressed_block = np.multiply(compressed_block, quantization_4_4)
-            # print('dequant')
-            # print(compressed_block)
+            if block_size_ == 4:
+                quantization_table = [[16, 14, 12, 10],
+                                      [14, 12, 10, 8],
+                                      [12, 10, 8, 6],
+                                      [10, 8, 6, 4]]
+            else:
+                quantization_table = [[16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16],
+                                      [16, 16, 16, 16, 16, 16, 16, 16]]
+
+            dct_block_quantized = np.divide(dct_block, quantization_table)
+            compressed_block = idctn(dct_block_quantized, norm='ortho')
+            compressed_block = np.multiply(compressed_block, quantization_table)
             compressed_block = np.clip(compressed_block, 0, 255)
             compressed_img[i:i + block_size_, j:j + block_size_] = np.uint8(compressed_block)
     return compressed_img
@@ -91,10 +83,9 @@ if __name__ == "__main__":
     input_image_path = 'baboon.ascii.pgm'
     output_image_path = 'baboon_comp.pgm'
     quality = 10
-    block_size = 4
+    block_size = 8
     compressed_image = compress_image(input_image_path, quality, block_size)
-
-    save_pgm(output_image_path,compressed_image)
+    save_pgm(output_image_path, compressed_image)
 
     print("Image compressed and saved successfully.")
 
