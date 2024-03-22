@@ -1,66 +1,122 @@
+import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter1d
 from scipy.fft import dctn, idctn
 
 
+def load_and_slice_quantization_table(file_path, slice_size):
+    quantization_table_32x32 = np.loadtxt(file_path, dtype=int)
+
+    if quantization_table_32x32.shape != (32, 32):
+        raise ValueError("Loaded quantization table must be 32x32")
+
+    sliced_table = quantization_table_32x32[:slice_size, :slice_size]
+    return sliced_table
+
+
+def create_quantization_table(quality_factor, base_table_):
+    if quality_factor < 50:
+        scaling_factor = 5000 / quality_factor
+    else:
+        scaling_factor = 200 - (quality_factor * 2)
+
+    scaled_table = np.clip(np.int32(np.floor((base_table_ * scaling_factor + 50) / 100)), 1, 255)
+    print(scaled_table)
+    return scaled_table
+
+
 def compress_image(image_path, quality_=50, block_size_=4):
+    # potrzebny algorytm na wygladzanie miedzy blokami
     if is_gray(image_path):
         print('grayscale')
-        img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        cv2.imshow('Original Image', img)
-        cv2.waitKey(0)
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     else:
         print('color')
-        img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+        image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-    if img is None:
+    if image is None:
         print("Error in reading the image.")
         exit()
 
-    height, width = img.shape
-    compressed_img = np.zeros_like(img)
+    height, width = image.shape
+
+    # Calculate the padding needed
+    pad_height = (block_size_ - height % block_size_) % block_size_
+    pad_width = (block_size_ - width % block_size_) % block_size_
+
+    # Pad the image
+    image = np.pad(image, ((0, pad_height), (0, pad_width)), mode='constant')
+
+    # Update height and width after padding
+    height, width = image.shape
+
+    compressed_img = np.zeros_like(image)
+    # for now every table is based on standard 8x8 jpeg q=50,
+    # will be created as one big 32x32 extended jpeg 8x8 array and sliced as user defines
+    # edit - based on making the 8x8 symmetrical and extending the table by interpolation, kinda works
+    """
+    if block_size_ == 4:
+        base_table = np.array([[16, 11, 10, 16],
+                               [12, 12, 14, 19],
+                               [14, 13, 16, 24],
+                               [14, 17, 22, 29]])
+    elif block_size_ == 5:
+        base_table = np.array([[16, 11, 10, 16, 24],
+                               [12, 12, 14, 19, 26],
+                               [14, 13, 16, 24, 40],
+                               [14, 17, 22, 29, 51],
+                               [18, 22, 37, 56, 68]])
+    elif block_size_ == 6:
+        base_table = np.array([[16, 11, 10, 16, 24, 40],
+                               [12, 12, 14, 19, 26, 58],
+                               [14, 13, 16, 24, 40, 57],
+                               [14, 17, 22, 29, 51, 87],
+                               [18, 22, 37, 56, 68, 109],
+                               [24, 35, 55, 64, 81, 104]])
+    elif block_size_ == 8:
+        base_table = np.array([[16, 11, 12, 15, 21, 32, 50, 66],
+                               [11, 12, 13, 18, 24, 46, 62, 73],
+                               [12, 13, 16, 23, 38, 56, 73, 75],
+                               [15, 18, 23, 29, 53, 75, 83, 80],
+                               [21, 24, 38, 53, 68, 95, 103, 94],
+                               [32, 46, 56, 75, 95, 104, 117, 96],
+                               [50, 62, 73, 83, 103, 117, 120, 102],
+                               [66, 73, 75, 80, 94, 96, 102, 99]])
+    else:
+        base_table = np.array([[16, 11, 10, 16],
+                               [12, 12, 14, 19],
+                               [14, 13, 16, 24],
+                               [14, 17, 22, 29]])
+    """
+    base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
+    quantization_table = create_quantization_table(quality_, base_table)
 
     for i in range(0, height, block_size_):
         for j in range(0, width, block_size_):
-            # potrzebny algorytm na wygladzanie miedzy blokami, to raczej nie dziala
-            # Smooth along horizontal block boundaries
-            block = img[i:i + block_size_, j:j + block_size_]
+            block = image[i:i + block_size_, j:j + block_size_]
             block = np.float32(block)
-            dct_block = dctn(block, norm='ortho')
-            dct_block = np.int32(dct_block)
-            if block_size_ == 4:
-                quantization_table = [[16, 14, 12, 10],
-                                      [14, 12, 10, 8],
-                                      [12, 10, 8, 6],
-                                      [10, 8, 6, 4]]
-            else:
-                quantization_table = [[16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16],
-                                      [16, 16, 16, 16, 16, 16, 16, 16]]
+            block = dctn(block, norm='ortho')
+            block = np.divide(block, quantization_table)
+            block = np.int32(block)
 
-            dct_block_quantized = np.divide(dct_block, quantization_table)
-            compressed_block = idctn(dct_block_quantized, norm='ortho')
-            compressed_block = np.multiply(compressed_block, quantization_table)
+            compressed_block = np.multiply(block, quantization_table)
+            compressed_block = idctn(compressed_block, norm='ortho')
             compressed_block = np.clip(compressed_block, 0, 255)
             compressed_img[i:i + block_size_, j:j + block_size_] = np.uint8(compressed_block)
+
+    # Remove padding before returning the compressed image
+    compressed_img = compressed_img[:height - pad_height, :width - pad_width]
     return compressed_img
 
 
 def is_gray(img_path):
-    img = cv2.imread(img_path)
-    print(img.shape)
-    if len(img.shape) < 3:
+    image = cv2.imread(img_path)
+    print(image.shape)
+    if len(image.shape) < 3:
         return True
-    if img.shape[2] == 1:
+    if image.shape[2] == 1:
         return True
-    b, g, r = img[:, :, 0], img[:, :, 1], img[:, :, 2]
+    b, g, r = image[:, :, 0], image[:, :, 1], image[:, :, 2]
     if (b == g).all() and (b == r).all():
         return True
     return False
@@ -80,15 +136,18 @@ def save_pgm(filename, image):
 
 
 if __name__ == "__main__":
-    input_image_path = 'baboon.ascii.pgm'
+    input_image_path = 'baboon.pgm'
     output_image_path = 'baboon_comp.pgm'
-    quality = 10
+    quality = 50
     block_size = 8
+
     compressed_image = compress_image(input_image_path, quality, block_size)
     save_pgm(output_image_path, compressed_image)
-
     print("Image compressed and saved successfully.")
-
+    original_size = round(os.path.getsize(input_image_path) / 1024)
+    compressed_size = round(os.path.getsize(output_image_path) / 1024)
+    print("Original size: " + str(original_size) + "kb")
+    print("Compressed size: " + str(compressed_size) + "kb")
     img = cv2.imread(input_image_path)
     cv2.imshow('Original Image', img)
     cv2.imshow('Compressed Image', compressed_image)
