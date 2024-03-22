@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="changed dct to scipy version">
-      <change afterPath="$PROJECT_DIR$/helpers.py" afterDir="false" />
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="big update, up to 32x32 block size, quality factor implemented">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apollonian_gasket.ascii.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/apollonian_gasket.pgm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apollonian_gasket_comp.ascii.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/baboon.ascii.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/baboon.pgm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baboon_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/baboon_comp.pgm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/helpers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -28,12 +25,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Bmotloch"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Bmotloch&quot;
   }
-}]]></component>
+}</component>
   <component name="GithubPullRequestsUISettings">
     <option name="selectedUrlAndAccountId">
       <UrlAndAccount>
@@ -55,15 +52,15 @@
     <option name="openDirectoriesWithSingleClick" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "settings.editor.selected.configurable": "reference.settings.ide.settings.notifications"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.notifications&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\48782\PycharmProjects\IMS" />
@@ -149,7 +146,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711033945149</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="big update, up to 32x32 block size, quality factor implemented">
+      <option name="closed" value="true" />
+      <created>1711131234480</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1711131234480</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -169,6 +174,7 @@
     <MESSAGE value="4x4 blocking, without zig-zag and encoding" />
     <MESSAGE value="added p2 pgm saving" />
     <MESSAGE value="changed dct to scipy version" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed dct to scipy version" />
+    <MESSAGE value="big update, up to 32x32 block size, quality factor implemented" />
+    <option name="LAST_COMMIT_MESSAGE" value="big update, up to 32x32 block size, quality factor implemented" />
   </component>
 </project>

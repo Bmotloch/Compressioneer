@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from scipy.fft import dctn, idctn
 
+import helpers
 
 def load_and_slice_quantization_table(file_path, slice_size):
     quantization_table_32x32 = np.loadtxt(file_path, dtype=int)
@@ -21,7 +22,7 @@ def create_quantization_table(quality_factor, base_table_):
         scaling_factor = 200 - (quality_factor * 2)
 
     scaled_table = np.clip(np.int32(np.floor((base_table_ * scaling_factor + 50) / 100)), 1, 255)
-    print(scaled_table)
+    # print(scaled_table)
     return scaled_table
 
 
@@ -148,8 +149,13 @@ if __name__ == "__main__":
     compressed_size = round(os.path.getsize(output_image_path) / 1024)
     print("Original size: " + str(original_size) + "kb")
     print("Compressed size: " + str(compressed_size) + "kb")
+    print("Saved "+ str(original_size-compressed_size) + "kb")
     img = cv2.imread(input_image_path)
     cv2.imshow('Original Image', img)
     cv2.imshow('Compressed Image', compressed_image)
+    mse_value = helpers.calculate_mse(input_image_path, output_image_path)
+    print("Mean Squared Error (MSE) between original and compressed images:", mse_value)
+    psnr_value = helpers.calculate_psnr(input_image_path, output_image_path)
+    print("Peak Signal-to-Noise Ratio (PSNR) between original and compressed images:", psnr_value)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
