@@ -96,12 +96,14 @@ def compress_image(image_path, quality_=50, block_size_=4):
         for j in range(0, width, block_size_):
             block = image[i:i + block_size_, j:j + block_size_]
             block = np.float32(block)
+            block = block - 127
             block = dctn(block, norm='ortho')
             block = np.divide(block, quantization_table)
             block = np.int32(block)
 
             compressed_block = np.multiply(block, quantization_table)
             compressed_block = idctn(compressed_block, norm='ortho')
+            compressed_block = compressed_block + 127
             compressed_block = np.clip(compressed_block, 0, 255)
             compressed_img[i:i + block_size_, j:j + block_size_] = np.uint8(compressed_block)
 
@@ -139,8 +141,8 @@ def save_pgm(filename, image):
 if __name__ == "__main__":
     input_image_path = 'baboon.pgm'
     output_image_path = 'baboon_comp.pgm'
-    quality = 50
-    block_size = 8
+    quality = 100
+    block_size = 32
 
     compressed_image = compress_image(input_image_path, quality, block_size)
     save_pgm(output_image_path, compressed_image)
