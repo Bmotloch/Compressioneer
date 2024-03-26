@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added two metrics">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="small improvement by shifting to 0">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baboon_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/baboon_comp.pgm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -40,7 +39,7 @@
     </option>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/main.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
@@ -162,7 +161,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711132978087</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="small improvement by shifting to 0">
+      <option name="closed" value="true" />
+      <created>1711382669554</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1711382669554</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -184,6 +191,7 @@
     <MESSAGE value="changed dct to scipy version" />
     <MESSAGE value="big update, up to 32x32 block size, quality factor implemented" />
     <MESSAGE value="added two metrics" />
-    <option name="LAST_COMMIT_MESSAGE" value="added two metrics" />
+    <MESSAGE value="small improvement by shifting to 0" />
+    <option name="LAST_COMMIT_MESSAGE" value="small improvement by shifting to 0" />
   </component>
 </project>

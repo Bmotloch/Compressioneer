@@ -5,6 +5,7 @@ from scipy.fft import dctn, idctn
 
 import helpers
 
+
 def load_and_slice_quantization_table(file_path, slice_size):
     quantization_table_32x32 = np.loadtxt(file_path, dtype=int)
 
@@ -22,12 +23,42 @@ def create_quantization_table(quality_factor, base_table_):
         scaling_factor = 200 - (quality_factor * 2)
 
     scaled_table = np.clip(np.int32(np.floor((base_table_ * scaling_factor + 50) / 100)), 1, 255)
-    # print(scaled_table)
     return scaled_table
 
 
-def compress_image(image_path, quality_=50, block_size_=4):
-    # potrzebny algorytm na wygladzanie miedzy blokami
+def create_zig_zag_pattern(block_size_=8):
+    zz_pattern = []
+    x_idx, y_idx = 0, 0
+    direction_flag = 1
+
+    for i in range(block_size_ ** 2):
+        zz_pattern.append((x_idx, y_idx))
+
+        if direction_flag == 1:
+            if y_idx == block_size_ - 1:
+                x_idx += 1
+                direction_flag = -1
+            elif x_idx == 0:
+                y_idx += 1
+                direction_flag = -1
+            else:
+                x_idx -= 1
+                y_idx += 1
+        else:
+            if x_idx == block_size_ - 1:
+                y_idx += 1
+                direction_flag = 1
+            elif y_idx == 0:
+                x_idx += 1
+                direction_flag = 1
+            else:
+                x_idx += 1
+                y_idx -= 1
+
+    return zz_pattern
+
+
+def compress_image(image_path, quality_=50, block_size_=8):
     if is_gray(image_path):
         print('grayscale')
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -41,59 +72,20 @@ def compress_image(image_path, quality_=50, block_size_=4):
 
     height, width = image.shape
 
-    # Calculate the padding needed
     pad_height = (block_size_ - height % block_size_) % block_size_
     pad_width = (block_size_ - width % block_size_) % block_size_
-
-    # Pad the image
     image = np.pad(image, ((0, pad_height), (0, pad_width)), mode='constant')
-
-    # Update height and width after padding
-    height, width = image.shape
+    altered_height, altered_width = image.shape
 
     compressed_img = np.zeros_like(image)
-    # for now every table is based on standard 8x8 jpeg q=50,
-    # will be created as one big 32x32 extended jpeg 8x8 array and sliced as user defines
-    # edit - based on making the 8x8 symmetrical and extending the table by interpolation, kinda works
-    """
-    if block_size_ == 4:
-        base_table = np.array([[16, 11, 10, 16],
-                               [12, 12, 14, 19],
-                               [14, 13, 16, 24],
-                               [14, 17, 22, 29]])
-    elif block_size_ == 5:
-        base_table = np.array([[16, 11, 10, 16, 24],
-                               [12, 12, 14, 19, 26],
-                               [14, 13, 16, 24, 40],
-                               [14, 17, 22, 29, 51],
-                               [18, 22, 37, 56, 68]])
-    elif block_size_ == 6:
-        base_table = np.array([[16, 11, 10, 16, 24, 40],
-                               [12, 12, 14, 19, 26, 58],
-                               [14, 13, 16, 24, 40, 57],
-                               [14, 17, 22, 29, 51, 87],
-                               [18, 22, 37, 56, 68, 109],
-                               [24, 35, 55, 64, 81, 104]])
-    elif block_size_ == 8:
-        base_table = np.array([[16, 11, 12, 15, 21, 32, 50, 66],
-                               [11, 12, 13, 18, 24, 46, 62, 73],
-                               [12, 13, 16, 23, 38, 56, 73, 75],
-                               [15, 18, 23, 29, 53, 75, 83, 80],
-                               [21, 24, 38, 53, 68, 95, 103, 94],
-                               [32, 46, 56, 75, 95, 104, 117, 96],
-                               [50, 62, 73, 83, 103, 117, 120, 102],
-                               [66, 73, 75, 80, 94, 96, 102, 99]])
-    else:
-        base_table = np.array([[16, 11, 10, 16],
-                               [12, 12, 14, 19],
-                               [14, 13, 16, 24],
-                               [14, 17, 22, 29]])
-    """
     base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
 
-    for i in range(0, height, block_size_):
-        for j in range(0, width, block_size_):
+    zz_pattern = create_zig_zag_pattern(block_size_)
+    zz_img_list = []
+
+    for i in range(0, altered_height, block_size_):
+        for j in range(0, altered_width, block_size_):
             block = image[i:i + block_size_, j:j + block_size_]
             block = np.float32(block)
             block = block - 127
@@ -101,14 +93,23 @@ def compress_image(image_path, quality_=50, block_size_=4):
             block = np.divide(block, quantization_table)
             block = np.int32(block)
 
+            zigzag_block = []
+            for x, y in zz_pattern:
+                zigzag_block.append(block[x, y])
+
+            # print("zz_block: (" + str(j) + ", " + str(i) + ")")
+            # print(zigzag_block)
+            zz_img_list.extend(zigzag_block)
+
             compressed_block = np.multiply(block, quantization_table)
             compressed_block = idctn(compressed_block, norm='ortho')
             compressed_block = compressed_block + 127
             compressed_block = np.clip(compressed_block, 0, 255)
             compressed_img[i:i + block_size_, j:j + block_size_] = np.uint8(compressed_block)
 
-    # Remove padding before returning the compressed image
-    compressed_img = compressed_img[:height - pad_height, :width - pad_width]
+    print(zz_img_list[:block_size_ ** 2])
+
+    compressed_img = compressed_img[:altered_height - pad_height, :altered_width - pad_width]
     return compressed_img
 
 
@@ -141,8 +142,8 @@ def save_pgm(filename, image):
 if __name__ == "__main__":
     input_image_path = 'baboon.pgm'
     output_image_path = 'baboon_comp.pgm'
-    quality = 100
-    block_size = 32
+    quality = 50
+    block_size = 8
 
     compressed_image = compress_image(input_image_path, quality, block_size)
     save_pgm(output_image_path, compressed_image)
@@ -151,7 +152,7 @@ if __name__ == "__main__":
     compressed_size = round(os.path.getsize(output_image_path) / 1024)
     print("Original size: " + str(original_size) + "kb")
     print("Compressed size: " + str(compressed_size) + "kb")
-    print("Saved "+ str(original_size-compressed_size) + "kb")
+    print("Saved " + str(original_size - compressed_size) + "kb")
     img = cv2.imread(input_image_path)
     cv2.imshow('Original Image', img)
     cv2.imshow('Compressed Image', compressed_image)
