@@ -2,7 +2,6 @@ import os
 import cv2
 import numpy as np
 from scipy.fft import dctn, idctn
-
 import helpers
 
 
@@ -58,6 +57,21 @@ def create_zig_zag_pattern(block_size_=8):
     return zz_pattern
 
 
+def run_length_encode(zz_img_list):
+    run_length_encoded_list = []
+    i = 0
+    while i < len(zz_img_list):
+        count = 1
+        while i + 1 < len(zz_img_list) and zz_img_list[i] == zz_img_list[i + 1]:
+            i += 1
+            count += 1
+        run_length_encoded_list.append(count)
+        run_length_encoded_list.append(zz_img_list[i])
+        i += 1
+
+    return run_length_encoded_list
+
+
 def compress_image(image_path, quality_=50, block_size_=8):
     if is_gray(image_path):
         print('grayscale')
@@ -83,6 +97,7 @@ def compress_image(image_path, quality_=50, block_size_=8):
 
     zz_pattern = create_zig_zag_pattern(block_size_)
     zz_img_list = []
+    run_length_list = []
 
     for i in range(0, altered_height, block_size_):
         for j in range(0, altered_width, block_size_):
@@ -107,8 +122,12 @@ def compress_image(image_path, quality_=50, block_size_=8):
             compressed_block = np.clip(compressed_block, 0, 255)
             compressed_img[i:i + block_size_, j:j + block_size_] = np.uint8(compressed_block)
 
-    print(zz_img_list[:block_size_ ** 2])
-
+    run_length_list = run_length_encode(zz_img_list)
+    print("first zig_zag block: " + str(zz_img_list[:block_size_ ** 2]))
+    print("first 64 bytes rl encoding : " + str(run_length_list[:64]))
+    print("zig_zag length: " + str(len(zz_img_list)))
+    print("rl encoding length: " + str(len(run_length_list)))
+    # huffman encoding to do
     compressed_img = compressed_img[:altered_height - pad_height, :altered_width - pad_width]
     return compressed_img
 
