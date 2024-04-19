@@ -49,29 +49,23 @@ def make_symmetrical_quantization_table(quantization_table):
     return symmetrical_table
 
 
-def calculate_mse(input_image_path, output_image_path):
-    # Ensure both images have the same shape
-    original_img_ = cv2.imread(input_image_path, cv2.IMREAD_GRAYSCALE)
-    compressed_img_ = cv2.imread(output_image_path, cv2.IMREAD_GRAYSCALE)
-    if original_img_.shape != compressed_img_.shape:
+def calculate_mse(original_img, compressed_img):
+    if original_img.shape != compressed_img.shape:
         raise ValueError("Original and compressed images must have the same shape")
 
-    # Calculate MSE
-    mse = np.mean((original_img_ - compressed_img_) ** 2)
+    mse = np.mean((original_img - compressed_img) ** 2)
     return mse
 
 
-def calculate_psnr(input_image_path, output_image_path):
-    # Ensure both images have the same shape
-    original_img_ = cv2.imread(input_image_path, cv2.IMREAD_GRAYSCALE)
-    compressed_img_ = cv2.imread(output_image_path, cv2.IMREAD_GRAYSCALE)
-    if original_img_.shape != compressed_img_.shape or original_img_.dtype != compressed_img_.dtype:
+def calculate_psnr(original_img, compressed_img):
+    if original_img.shape != compressed_img.shape or original_img.dtype != compressed_img.dtype:
         raise ValueError("Original and compressed images must have the same shape and data type")
-    mse = np.mean((original_img_ - compressed_img_) ** 2)
+
+    mse = np.mean((original_img - compressed_img) ** 2)
 
     if mse == 0:
         psnr = float('inf')
     else:
-        max_pixel = 255.0 if original_img_.dtype == np.uint8 else 1.0
+        max_pixel = 255.0 if original_img.dtype == np.uint8 else 1.0
         psnr = 20 * np.log10(max_pixel / np.sqrt(mse))
     return psnr

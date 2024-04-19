@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from scipy.fft import dctn, idctn
 import helpers
+import Huffman
 
 
 def load_and_slice_quantization_table(file_path, slice_size):
@@ -107,7 +108,10 @@ def run_length_decode(run_length_encoded_list):
 
 
 def compress_image(image_path, quality_=50, block_size_=8):
-    if is_gray(image_path):
+    if image_path.endswith('.isa'):
+        print('isa')
+        image = decompress_image(image_path)
+    elif is_gray(image_path):
         print('grayscale')
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     else:
@@ -118,22 +122,22 @@ def compress_image(image_path, quality_=50, block_size_=8):
         print("Error in reading the image.")
         exit()
 
-    height, width = image.shape
+    height_, width_ = image.shape
 
-    pad_height = (block_size_ - height % block_size_) % block_size_
-    pad_width = (block_size_ - width % block_size_) % block_size_
+    # Calculate padding
+    pad_height = (block_size_ - height_ % block_size_) % block_size_
+    pad_width = (block_size_ - width_ % block_size_) % block_size_
+    padded_height = height_ + pad_height
+    padded_width = width_ + pad_width
+
     image = np.pad(image, ((0, pad_height), (0, pad_width)), mode='constant')
-    altered_height, altered_width = image.shape
 
-    compressed_img = np.zeros_like(image)
     base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
-
     zz_pattern = create_zig_zag_pattern(block_size_)
     zz_img_list = []
-    run_length_list = []
-    for i in range(0, altered_height, block_size_):
-        for j in range(0, altered_width, block_size_):
+    for i in range(0, padded_height, block_size_):
+        for j in range(0, padded_width, block_size_):
             block = image[i:i + block_size_, j:j + block_size_]
             block = np.float64(block)
             block = block - 128
@@ -144,11 +148,32 @@ def compress_image(image_path, quality_=50, block_size_=8):
             zz_img_list.extend(zigzag_block.flatten())
 
     run_length_list = run_length_encode(zz_img_list)  # rl encoded full image
-    decoded_run_length_list = run_length_decode(run_length_list)  # rl decoded full image
+    return run_length_list, height_, width_
 
+
+def decompress_image(encoded_image_path):
+    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_ = Huffman.read_isa_file(encoded_image_path)
+    decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
+    decoded_run_length_list = run_length_decode(decoded_isa_data)
+
+    # Calculate padding
+    pad_height = (block_size_ - height_ % block_size_) % block_size_
+    pad_width = (block_size_ - width_ % block_size_) % block_size_
+    padded_height = height_ + pad_height
+    padded_width = width_ + pad_width
+
+    # Prepare compressed image matrix
+    compressed_img = np.zeros((padded_height, padded_width))
+
+    # Prepare quantization table and zigzag pattern
+    base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
+    quantization_table = create_quantization_table(quality_, base_table)
+    zz_pattern = create_zig_zag_pattern(block_size_)
+
+    # Decode and reconstruct blocks
     idx = 0
-    for i in range(0, altered_height, block_size_):
-        for j in range(0, altered_width, block_size_):
+    for i in range(0, padded_height, block_size_):
+        for j in range(0, padded_width, block_size_):
             block_data = decoded_run_length_list[idx:idx + block_size_ ** 2]
             block = reverse_zigzag_transform(block_data, zz_pattern)
             idx += block_size_ ** 2
@@ -158,17 +183,39 @@ def compress_image(image_path, quality_=50, block_size_=8):
             block = np.clip(block, 0, 255)
             compressed_img[i:i + block_size_, j:j + block_size_] = block
 
-    print("first zig_zag block: " + str(zz_img_list[:block_size_ ** 2]))
-    print("first decoded zig_zag block: " + str(decoded_run_length_list[:64]))
-    print("zig_zag length: " + str(len(zz_img_list)))
-    print("rl encoding length: " + str(len(run_length_list)))
-    print("rl decoded length:" + str(len(decoded_run_length_list)))
-    print(check_same_elements(zz_img_list, decoded_run_length_list))
-    # huffman encoding to do
-    # cv2.imshow("comp", compressed_img)
-    # cv2.waitKey(0)
-    compressed_img = compressed_img[:altered_height - pad_height, :altered_width - pad_width]
-    return compressed_img
+    # Remove padding
+    decompressed_img = np.uint8(compressed_img[:height_, :width_])
+    return decompressed_img
+
+
+def compress_pgm(input_file_path, quality_, block_size_):
+    image = cv2.imread(input_file_path, cv2.IMREAD_GRAYSCALE)
+    height_, width_ = image.shape
+
+    pad_height = (block_size_ - height_ % block_size_) % block_size_
+    pad_width = (block_size_ - width_ % block_size_) % block_size_
+    padded_height = height_ + pad_height
+    padded_width = width_ + pad_width
+    base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
+    quantization_table = create_quantization_table(quality_, base_table)
+
+    # Prepare compressed image matrix
+    compressed_img = np.zeros((padded_height, padded_width))
+    for i in range(0, padded_height, block_size_):
+        for j in range(0, padded_width, block_size_):
+            block = image[i:i + block_size_, j:j + block_size_]
+            block = np.float64(block)
+            block = block - 128
+            block = dctn(block, norm='ortho')
+            block = np.round(np.divide(block, quantization_table))
+            block = np.multiply(block, quantization_table)
+            block = idctn(block, norm='ortho')
+            block = block + 128
+            block = np.clip(block, 0, 255)
+            compressed_img[i:i + block_size_, j:j + block_size_] = block
+
+    decompressed_img = np.uint8(compressed_img[:height_, :width_])
+    return decompressed_img
 
 
 def check_same_elements(list1, list2):
@@ -212,27 +259,60 @@ def save_pgm(filename, image):
             f.write("\n")
 
 
+def open_image(image_path):
+    if image_path.endswith('.isa'):
+        image = decompress_image(image_path)
+    else:
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    return image
+
+
+def save_image(input_image_path_, output_image_path_, quality_, block_size_):
+    if input_image_path_.endswith('.isa'):
+        if output_image_path_.endswith('.isa'):
+            compressed_image_, height_, width_ = compress_image(input_image_path_, quality_, block_size_)
+            Huffman.save_isa(output_image_path_, compressed_image_, quality_, block_size_, height_, width_)
+        elif output_image_path_.endswith('.pgm'):
+            image = decompress_image(input_image_path_)
+            save_pgm(output_image_path_, image)
+        else:
+            print("Output format not supported")
+            exit(0)
+    elif input_image_path_.endswith('.pgm'):
+        if output_image_path_.endswith('.isa'):
+            compressed_image_, height_, width_ = compress_image(input_image_path_, quality_, block_size_)
+            Huffman.save_isa(output_image_path_, compressed_image_, quality_, block_size_, height_, width_)
+        elif output_image_path_.endswith('.pgm'):
+            pgm = compress_pgm(input_image_path_, quality_, block_size_)
+            save_pgm(output_image_path_, pgm)
+        else:
+            print("Output format not supported")
+            exit(0)
+    else:
+        print("Input format not supported")
+        exit(0)
+
+
 if __name__ == "__main__":
-    input_image_path = 'lena.pgm'
-    output_image_path = 'lena_comp.pgm'
+    input_image_path = 'baboon.pgm'
+    output_image_path = 'baboon.isa'
     quality = 50
     block_size = 8
 
-    compressed_image = compress_image(input_image_path, quality, block_size)
+    save_image(input_image_path, output_image_path, quality, block_size)
 
-    save_pgm(output_image_path, compressed_image)
-    print("Image compressed and saved successfully.")
+    uncompressed_image = open_image(input_image_path)
+    decompressed_image = open_image(output_image_path)
     original_size = round(os.path.getsize(input_image_path) / 1024)
     compressed_size = round(os.path.getsize(output_image_path) / 1024)
     print("Original size: " + str(original_size) + "kb")
     print("Compressed size: " + str(compressed_size) + "kb")
-    print("Saved " + str(original_size - compressed_size) + "kb")
-    img = cv2.imread(input_image_path)
-    cv2.imshow('Original Image', cv2.resize(img, (600, 600)))
-    cv2.imshow('Compressed Image', cv2.resize(compressed_image, (600, 600)))
-    mse_value = helpers.calculate_mse(input_image_path, output_image_path)
+    print("Difference: " + str(original_size - compressed_size) + "kb")
+    cv2.imshow('Uncompressed_image', cv2.resize(uncompressed_image, (600, 600)))
+    cv2.imshow('Compressed Image', cv2.resize(decompressed_image, (600, 600)))
+    mse_value = helpers.calculate_mse(uncompressed_image, decompressed_image)
     print("Mean Squared Error (MSE) between original and compressed images:", mse_value)
-    psnr_value = helpers.calculate_psnr(input_image_path, output_image_path)
+    psnr_value = helpers.calculate_psnr(uncompressed_image, decompressed_image)
     print("Peak Signal-to-Noise Ratio (PSNR) between original and compressed images:", psnr_value)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
