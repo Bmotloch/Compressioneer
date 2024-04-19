@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added rl encoding,huffman encoding to do">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added rl decoding, inverse zig zag, problem with quantisation table and overall quality">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baboon_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/baboon_comp.pgm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pepper_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/pepper_comp.pgm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -189,7 +189,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711477800221</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="added rl decoding, inverse zig zag, problem with quantisation table and overall quality">
+      <option name="closed" value="true" />
+      <created>1713483676101</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1713483676101</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -214,6 +222,7 @@
     <MESSAGE value="small improvement by shifting to 0" />
     <MESSAGE value="added zig_zag pattern creation and list appending zig_zagged blocks" />
     <MESSAGE value="added rl encoding,huffman encoding to do" />
-    <option name="LAST_COMMIT_MESSAGE" value="added rl encoding,huffman encoding to do" />
+    <MESSAGE value="added rl decoding, inverse zig zag, problem with quantisation table and overall quality" />
+    <option name="LAST_COMMIT_MESSAGE" value="added rl decoding, inverse zig zag, problem with quantisation table and overall quality" />
   </component>
 </project>

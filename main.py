@@ -61,10 +61,23 @@ def zigzag_transform(block, zz_pattern):
     block_size_ = int(np.sqrt(len(zz_pattern)))
     zigzag_block = np.zeros((block_size_, block_size_), dtype=np.int32)
 
-    for i, (x, y) in enumerate(zz_pattern):
-        zigzag_block[x, y] = block[i]
+    for i, (y, x) in enumerate(zz_pattern):
+        zigzag_block[y, x] = block[i]
 
     return zigzag_block
+
+
+def reverse_zigzag_transform(zigzag_block, zz_pattern):
+    block_size_ = int(np.sqrt(len(zz_pattern)))
+    block = np.zeros((block_size_, block_size_), dtype=np.int32)
+    block = block.flatten()
+    x, y = zip(*zz_pattern)
+    key = [0] * (len(zz_pattern))
+    for i in range(len(zz_pattern)):
+        key[i] = x[i] * block_size_ + y[i]
+    for i in range(len(key)):
+        block[i] = zigzag_block[key[i]]
+    return block.reshape((block_size_, block_size_))
 
 
 def run_length_encode(zz_img_list):
@@ -91,16 +104,6 @@ def run_length_decode(run_length_encoded_list):
         zz_img_list.extend([pixel_value] * count)
         i += 2
     return zz_img_list
-
-
-def inverse_zigzag_transform(zigzag_block, zz_pattern):
-    block_size_ = int(np.sqrt(len(zz_pattern)))
-    block = np.zeros((block_size_, block_size_), dtype=np.int32)
-
-    for i, (x, y) in enumerate(zz_pattern):
-        block[x, y] = zigzag_block[i]
-
-    return block
 
 
 def compress_image(image_path, quality_=50, block_size_=8):
@@ -133,28 +136,27 @@ def compress_image(image_path, quality_=50, block_size_=8):
         for j in range(0, altered_width, block_size_):
             block = image[i:i + block_size_, j:j + block_size_]
             block = np.float64(block)
-            block = block - 127
+            block = block - 128
             block = dctn(block, norm='ortho')
-            block = np.divide(block, quantization_table)
-            block = np.int8(block)
+            block = np.round(np.divide(block, quantization_table))
 
             zigzag_block = zigzag_transform(block.flatten(), zz_pattern)  # Zigzag transform
             zz_img_list.extend(zigzag_block.flatten())
 
-    run_length_list = run_length_encode(zz_img_list)
-    decoded_run_length_list = run_length_decode(run_length_list)
+    run_length_list = run_length_encode(zz_img_list)  # rl encoded full image
+    decoded_run_length_list = run_length_decode(run_length_list)  # rl decoded full image
 
     idx = 0
     for i in range(0, altered_height, block_size_):
         for j in range(0, altered_width, block_size_):
             block_data = decoded_run_length_list[idx:idx + block_size_ ** 2]
-            block = inverse_zigzag_transform(block_data, zz_pattern)
+            block = reverse_zigzag_transform(block_data, zz_pattern)
             idx += block_size_ ** 2
             block = np.multiply(block, quantization_table)
             block = idctn(block, norm='ortho')
-            block = block + 127
+            block = block + 128
             block = np.clip(block, 0, 255)
-            compressed_img[i:i + block_size_, j:j + block_size_] = np.uint8(block)
+            compressed_img[i:i + block_size_, j:j + block_size_] = block
 
     print("first zig_zag block: " + str(zz_img_list[:block_size_ ** 2]))
     print("first decoded zig_zag block: " + str(decoded_run_length_list[:64]))
@@ -163,6 +165,8 @@ def compress_image(image_path, quality_=50, block_size_=8):
     print("rl decoded length:" + str(len(decoded_run_length_list)))
     print(check_same_elements(zz_img_list, decoded_run_length_list))
     # huffman encoding to do
+    # cv2.imshow("comp", compressed_img)
+    # cv2.waitKey(0)
     compressed_img = compressed_img[:altered_height - pad_height, :altered_width - pad_width]
     return compressed_img
 
@@ -209,8 +213,8 @@ def save_pgm(filename, image):
 
 
 if __name__ == "__main__":
-    input_image_path = 'pepper.pgm'
-    output_image_path = 'pepper_comp.pgm'
+    input_image_path = 'lena.pgm'
+    output_image_path = 'lena_comp.pgm'
     quality = 50
     block_size = 8
 
