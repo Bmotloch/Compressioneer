@@ -21,7 +21,6 @@ class OpenFile(QThread):
 
     def run(self):
         try:
-            filename = os.path.basename(self.file_path)
             self.opened_image = compressor.open_image(self.file_path)
             self.finished.emit()
         except Exception as e:
@@ -30,7 +29,7 @@ class OpenFile(QThread):
 
 class Compress(QThread):
     compressed = pyqtSignal(object)
-    compression_failed = pyqtSignal()
+    compression_failed = pyqtSignal(str)
 
     def __init__(self, file_path, quality, block_size):
         super().__init__()
@@ -44,10 +43,9 @@ class Compress(QThread):
             if compressed_image is not None:
                 self.compressed.emit(compressed_image)
             else:
-                self.compression_failed.emit()
+                raise ValueError("Compression failed: Compressed image is None.")
         except Exception as e:
-            print("Compression error:", e)
-            self.compression_failed.emit()
+            self.compression_failed.emit(str(e))
 
 
 class MainWindow(QMainWindow):
@@ -198,6 +196,8 @@ class MainWindow(QMainWindow):
         self.chosen_temp_label.setVisible(False)
         self.chosen_image_display.setVisible(True)
         self.display_chosen_image()
+        width, height = self.chosen_image.shape
+        self.chosen_image_label.setText(f"Original Image {width}x{height}")
         self.compress_button.setEnabled(True)
 
     def open_file_error(self, error_message):
@@ -224,10 +224,12 @@ class MainWindow(QMainWindow):
         self.compressed_temp_label.setVisible(False)
         self.compressed_image_display.setVisible(True)
         self.display_compressed_image()
+        width, height = self.compressed_image.shape
+        self.compressed_image_label.setText(f"Compressed Image {width}x{height}")
         self.print_metrics()
 
-    def compression_failed(self):
-        self.print_info('Compression failed. Please try again.')
+    def compression_failed(self, error_message):
+        self.print_info(f'Compression failed: {error_message}')
 
     def save_file_as(self):
         file_dialog = QFileDialog(self)

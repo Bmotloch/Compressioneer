@@ -4,13 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added metrics display">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added threads for opening and compression, small ui magic">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lena.isa" beforeDir="false" afterPath="$PROJECT_DIR$/Lena.isa" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/baboon.isa" beforeDir="false" afterPath="$PROJECT_DIR$/baboon.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/baboon_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/baboon_comp.pgm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/baboon_comp.pgm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/body1_comp.pgm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fractal_tree_comp.pgm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lena_comp.pgm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pepper_comp.pgm" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -239,7 +242,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713646858630</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="added threads for opening and compression, small ui magic">
+      <option name="closed" value="true" />
+      <created>1713654479524</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1713654479524</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -269,7 +280,8 @@
     <MESSAGE value="huffman working, writing to new isa format in ascii currently" />
     <MESSAGE value="implemented gui, small code cleaning" />
     <MESSAGE value="added metrics display" />
-    <option name="LAST_COMMIT_MESSAGE" value="added metrics display" />
+    <MESSAGE value="added threads for opening and compression, small ui magic" />
+    <option name="LAST_COMMIT_MESSAGE" value="added threads for opening and compression, small ui magic" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
