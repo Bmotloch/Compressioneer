@@ -147,9 +147,13 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
 
 
 def decompress_isa(encoded_image_path):
-    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_ = Huffman.read_isa_file(encoded_image_path)
+    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
+        encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
-    decoded_run_length_list = run_length_decode(decoded_isa_data)
+    if rl_flag_ == 1:
+        decoded_run_length_list = run_length_decode(decoded_isa_data)
+    else:
+        decoded_run_length_list = decoded_isa_data
 
     # Calculate padding
     pad_height = (block_size_ - height_ % block_size_) % block_size_
@@ -201,7 +205,7 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
     quantization_table = create_quantization_table(compressed_quality, base_table)
     zz_pattern = create_zig_zag_pattern(compressed_block_size)
     zz_img_list = []
-
+    rl_flag = 1
     dct_image = np.pad(dct_image, ((0, pad_height), (0, pad_width)), mode='constant')
     for i in range(0, padded_height, compressed_block_size):
         for j in range(0, padded_width, compressed_block_size):
@@ -214,7 +218,14 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
             zz_img_list.extend(zigzag_block.flatten())
 
     run_length_list = run_length_encode(zz_img_list)
-    Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width)
+
+    if len(zz_img_list) <= len(run_length_list):
+        rl_flag = 0
+        Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width,
+                         rl_flag)
+    else:
+        Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width,
+                         rl_flag)
 
 
 def save_pgm(filename, image):
