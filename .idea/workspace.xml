@@ -4,19 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="huffman working, writing to new isa format in ascii currently">
-      <change afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="implemented gui, small code cleaning">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/A.pgm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lena.isa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lena1.isa" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/apollonian_gasket_comp.pgm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baboon.isa" beforeDir="false" afterPath="$PROJECT_DIR$/baboon.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extended_table.txt" beforeDir="false" afterPath="$PROJECT_DIR$/extended_table.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fractal_tree.isa" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/baboon_comp.pgm" beforeDir="false" afterPath="$PROJECT_DIR$/baboon_comp.pgm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.isa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test1.isa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test2.isa" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -221,7 +215,23 @@
       <option name="project" value="LOCAL" />
       <updated>1713557927957</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="implemented gui, small code cleaning">
+      <option name="closed" value="true" />
+      <created>1713638202017</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1713638202017</updated>
+    </task>
+    <task id="LOCAL-00015" summary="implemented gui, small code cleaning">
+      <option name="closed" value="true" />
+      <created>1713638212203</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1713638212203</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -249,7 +259,8 @@
     <MESSAGE value="added rl decoding, inverse zig zag, problem with quantisation table and overall quality" />
     <MESSAGE value="fixed reverse zig zag, ready for huffman" />
     <MESSAGE value="huffman working, writing to new isa format in ascii currently" />
-    <option name="LAST_COMMIT_MESSAGE" value="huffman working, writing to new isa format in ascii currently" />
+    <MESSAGE value="implemented gui, small code cleaning" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented gui, small code cleaning" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -7,20 +7,22 @@ from PyQt5 import QtGui
 import compressor
 import os
 
+import helpers
+
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.input_image_path = 'pepper.pgm'
-        self.output_image_path = 'pepper.isa'
+        self.input_image_path = 'baboon.pgm'
+        self.output_image_path = 'baboon.isa'
         self.quality = 50
         self.block_size = 8
         self.compressed_quality = 50
         self.compressed_block_size = 8
         self.setWindowIcon(QtGui.QIcon('assets/icon.jpg'))
-        self.compressed_image = None
         self.chosen_image = None
+        self.compressed_image = None
         self.max_display_width = 600
 
         self.file_button = QPushButton()
@@ -63,7 +65,7 @@ class MainWindow(QMainWindow):
         self.block_size_slider_layout.addWidget(self.block_size_slider_label)
         self.block_size_slider_layout.addWidget(self.block_size_slider)
 
-        self.chosen_image_display = QLabel("")
+        self.chosen_image_display = QLabel()
         self.chosen_image_display.setAlignment(Qt.AlignCenter)
         self.chosen_image_label = QLabel("Original Image")
         self.chosen_image_label.setAlignment(Qt.AlignCenter)
@@ -72,7 +74,7 @@ class MainWindow(QMainWindow):
         self.chosen_image_layout.addWidget(self.chosen_image_display)
         self.chosen_image_layout.addWidget(self.chosen_image_label)
 
-        self.compressed_image_display = QLabel("")
+        self.compressed_image_display = QLabel()
         self.compressed_image_display.setAlignment(Qt.AlignCenter)
         self.compressed_image_label = QLabel("Compressed Image")
         self.compressed_image_label.setAlignment(Qt.AlignCenter)
@@ -87,6 +89,10 @@ class MainWindow(QMainWindow):
 
         self.info_label = QLabel()
         self.info_label.setAlignment(Qt.AlignCenter)
+        self.metrics_label = QLabel()
+        self.metrics_label.setAlignment(Qt.AlignCenter)
+        self.size_label = QLabel()
+        self.size_label.setAlignment(Qt.AlignCenter)
 
         self.button_layout = QVBoxLayout()
         self.button_layout.addWidget(self.file_button)
@@ -107,6 +113,8 @@ class MainWindow(QMainWindow):
         containerLayout.addLayout(self.button_slider_layout)
         containerLayout.addLayout(self.image_layout)
         containerLayout.addWidget(self.info_label)
+        containerLayout.addWidget(self.metrics_label)
+        containerLayout.addWidget(self.size_label)
         mainContainer = QWidget()
         mainContainer.setLayout(containerLayout)
         self.setCentralWidget(mainContainer)
@@ -131,6 +139,7 @@ class MainWindow(QMainWindow):
     def compress(self):
         filename = os.path.basename(self.input_image_path)
         self.print_info('Compression started...')
+        self.size_label.hide()
         self.compressed_image = compressor.perform_dct(self.input_image_path, self.quality, self.block_size)
         if self.compressed_image is not None:
             self.compressed_quality = self.quality
@@ -138,6 +147,7 @@ class MainWindow(QMainWindow):
             self.save_button.setEnabled(True)
             self.print_info(f'Image {filename} compressed successfully!')
             self.display_compressed_image()
+            self.print_metrics()
         else:
             self.print_info('Compression failed. Please try again.')
 
@@ -149,15 +159,40 @@ class MainWindow(QMainWindow):
         file_dialog.setAcceptMode(QFileDialog.AcceptSave)
         if file_dialog.exec_():
             self.output_image_path = file_dialog.selectedFiles()[0]
+            self.metrics_label.hide()
             self.print_info('Saving...')
             compressor.save_image(self.compressed_image, self.output_image_path, self.compressed_quality,
                                   self.compressed_block_size)
             filename = os.path.basename(self.output_image_path)
             self.print_info(f'Image saved as: {filename}')
+            self.print_size_dif()
             self.save_button.setEnabled(False)
 
     def print_info(self, text):
         self.info_label.setText(text)
+
+    def print_metrics(self):
+        mse = helpers.calculate_mse(self.chosen_image, self.compressed_image)
+        psnr = helpers.calculate_psnr(self.chosen_image, self.compressed_image)
+        self.metrics_label.show()
+        self.metrics_label.setText(f"MSE between original and compressed images: {round(mse, 3)}\n"
+                                   f"PSNR between original and compressed images: {round(psnr, 3)}dB")
+
+    def print_size_dif(self):
+        original_size = round(os.path.getsize(self.input_image_path) / 1024)
+        compressed_size = round(os.path.getsize(self.output_image_path) / 1024)
+        dif = original_size - compressed_size
+        text = ""
+        if dif > 0:
+            text = f"Saved {dif}kb"
+        elif dif < 0:
+            text = f"Lost {dif}kb"
+        else:
+            text = "Size unchanged"
+        self.size_label.show()
+        self.size_label.setText(f"Original size: {original_size}kb\n"
+                                f"Compressed size: {compressed_size}kb\n"
+                                f"{text}")
 
     def set_quality(self):
         self.quality = self.quality_slider.value()
