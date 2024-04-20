@@ -210,10 +210,10 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
             block = block - 128
             block = dctn(block, norm='ortho')
             block = np.round(np.divide(block, quantization_table))
-            zigzag_block = zigzag_transform(block.flatten(), zz_pattern)  # Zigzag transform
+            zigzag_block = zigzag_transform(block.flatten(), zz_pattern)
             zz_img_list.extend(zigzag_block.flatten())
 
-    run_length_list = run_length_encode(zz_img_list)  # rl encoded full image
+    run_length_list = run_length_encode(zz_img_list)
     Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width)
 
 
