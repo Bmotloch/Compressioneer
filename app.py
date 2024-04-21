@@ -171,11 +171,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(mainContainer)
 
         self.setGeometry(320, 180, 1280, 720)
+        self.setFixedSize(1280,720)
         self.setWindowTitle("Compressioneer")
 
     def choose_file(self):
-        file_dialog = QFileDialog(self)
-        file_dialog.setNameFilter("Images (*.pgm *.isa)")
+        file_dialog = QFileDialog(self, 'Choose image:', os.getcwd() + '\\images\\')
+        file_dialog.setNameFilter("Images (*.pgm *.isa *.png *.jpg)")
         file_dialog.setViewMode(QFileDialog.Detail)
         file_dialog.setFileMode(QFileDialog.ExistingFile)
         if file_dialog.exec_():
@@ -232,8 +233,8 @@ class MainWindow(QMainWindow):
         self.print_info(f'Compression failed: {error_message}')
 
     def save_file_as(self):
-        file_dialog = QFileDialog(self)
-        file_dialog.setNameFilter("Images (*.pgm *.isa)")
+        file_dialog = QFileDialog(self, 'Save image as:', os.getcwd() + '\\images\\')
+        file_dialog.setNameFilter("Images (*.pgm *.isa *.png *.jpg)")
         file_dialog.setViewMode(QFileDialog.Detail)
         file_dialog.setFileMode(QFileDialog.AnyFile)
         file_dialog.setAcceptMode(QFileDialog.AcceptSave)

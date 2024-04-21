@@ -1,5 +1,7 @@
 import heapq
 from collections import Counter
+import pickle
+import zlib
 
 
 class Node:
@@ -61,49 +63,45 @@ def huffman_decode(encoded_data, huffman_codes):
     return decoded_data
 
 
-def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, height, width, rl_flag):
-    with open(filename, 'w') as f:
-        f.write(f"{height}\n")
-        f.write(f"{width}\n")
-        f.write(f"{rl_flag}\n")
-        f.write(f"{quality}\n")
-        f.write(f"{block_size}\n")
+def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, height, width, rl_flag, delta_flag):
+    data_to_write = {
+        'encoded_data': encoded_data,
+        'huffman_codes': huffman_codes,
+        'quality': quality,
+        'block_size': block_size,
+        'height': height,
+        'width': width,
+        'rl_flag': rl_flag,
+        'delta_flag': delta_flag
+    }
 
-        for symbol, code in huffman_codes.items():
-            f.write(f"{symbol}:{code}\n")
+    compressed_data = zlib.compress(pickle.dumps(data_to_write))
 
-        f.write("---\n")
-        f.write(encoded_data)
+    with open(filename, 'wb') as f:
+        f.write(compressed_data)
 
 
 def read_isa_file(filename):
-    huffman_codes = {}
-    encoded_data = ""
-    quality = 0
-    block_size = 0
-    height = 0
-    width = 0
-    rl_flag = 0
-    with open(filename, 'r') as f:
-        height = int(f.readline().strip())
-        width = int(f.readline().strip())
-        rl_flag = int(f.readline().strip())
-        quality = int(f.readline().strip())
-        block_size = int(f.readline().strip())
+    with open(filename, 'rb') as f:
+        compressed_data = f.read()
 
-        line = f.readline().strip()
-        while line != "---":
-            symbol, code = line.split(":")
-            huffman_codes[symbol] = code
-            line = f.readline().strip()
+    decompressed_data = zlib.decompress(compressed_data)
+    data = pickle.loads(decompressed_data)
 
-        encoded_data = f.read().strip()
-
-    return encoded_data, huffman_codes, quality, block_size, height, width, rl_flag
+    return (
+        data['encoded_data'],
+        data['huffman_codes'],
+        data['quality'],
+        data['block_size'],
+        data['height'],
+        data['width'],
+        data['rl_flag'],
+        data['delta_flag']
+    )
 
 
-def save_isa(filename, run_length_encoded_data, quality, block_size, height, width, rl_flag):
-    tree = build_huffman_tree(run_length_encoded_data)
+def save_isa(filename, data, quality, block_size, height, width, rl_flag, delta_flag):
+    tree = build_huffman_tree(data)
     codes = generate_huffman_codes(tree)
-    huff_encoded = huffman_encode(run_length_encoded_data, codes)
-    write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag)  # file written
+    huff_encoded = huffman_encode(data, codes)
+    write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag, delta_flag)  # file written

@@ -1,3 +1,5 @@
+import numpy as np
+
 from app import MainWindow
 import sys
 from PyQt5.QtWidgets import QApplication

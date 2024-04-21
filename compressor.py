@@ -83,6 +83,22 @@ def create_zigzag_key(zz_pattern, block_size):
     return key
 
 
+def delta_encode(data):
+    delta_encoded = [data[0]]
+    for i in range(1, len(data)):
+        delta = data[i] - data[i - 1]
+        delta_encoded.append(delta)
+    return delta_encoded
+
+
+def decode_delta(delta_encoded):
+    original_data = [delta_encoded[0]]
+    for i in range(1, len(delta_encoded)):
+        original_value = original_data[i - 1] + delta_encoded[i]
+        original_data.append(original_value)
+    return original_data
+
+
 def run_length_encode(zz_img_list):
     run_length_encoded_list = []
     i = 0
@@ -116,6 +132,7 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
         image = cv2.imread(input_image_path, cv2.IMREAD_GRAYSCALE)
     else:
         image = cv2.imread(input_image_path, cv2.IMREAD_COLOR)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # temporary
 
     height_, width_ = image.shape
 
@@ -147,15 +164,18 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
 
 
 def decompress_isa(encoded_image_path):
-    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
+    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_, delta_flag_ = Huffman.read_isa_file(
         encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
-    if rl_flag_ == 1:
+    print(f"rl_flag:{rl_flag_}\n"  # seems to prefer only run length
+          f"delta_flag:{delta_flag_}")
+    if rl_flag_ == 1 and delta_flag_ == 1:
         decoded_run_length_list = run_length_decode(decoded_isa_data)
+        dct_data = decode_delta(decoded_run_length_list)
+    elif rl_flag_ == 1 and delta_flag_ == 0:
+        dct_data = run_length_decode(decoded_isa_data)
     else:
-        decoded_run_length_list = decoded_isa_data
-
-    # Calculate padding
+        dct_data = decoded_isa_data
     pad_height = (block_size_ - height_ % block_size_) % block_size_
     pad_width = (block_size_ - width_ % block_size_) % block_size_
     padded_height = height_ + pad_height
@@ -170,7 +190,7 @@ def decompress_isa(encoded_image_path):
     idx = 0
     for i in range(0, padded_height, block_size_):
         for j in range(0, padded_width, block_size_):
-            block_data = decoded_run_length_list[idx:idx + block_size_ ** 2]
+            block_data = dct_data[idx:idx + block_size_ ** 2]
             block = reverse_zigzag_transform(block_data, zz_pattern, zz_key)
             idx += block_size_ ** 2
             block = np.multiply(block, quantization_table)
@@ -205,6 +225,7 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
     quantization_table = create_quantization_table(compressed_quality, base_table)
     zz_pattern = create_zig_zag_pattern(compressed_block_size)
     zz_img_list = []
+    delta_flag = 1
     rl_flag = 1
     dct_image = np.pad(dct_image, ((0, pad_height), (0, pad_width)), mode='constant')
     for i in range(0, padded_height, compressed_block_size):
@@ -217,15 +238,27 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
             zigzag_block = zigzag_transform(block.flatten(), zz_pattern)
             zz_img_list.extend(zigzag_block.flatten())
 
-    run_length_list = run_length_encode(zz_img_list)
+    no_encoding_size = len(zz_img_list)
 
-    if len(zz_img_list) <= len(run_length_list):
-        rl_flag = 0
-        Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width,
-                         rl_flag)
-    else:
+    run_length_list = run_length_encode(zz_img_list)
+    run_length_size = len(run_length_list)
+
+    delta_encoded_list = delta_encode(zz_img_list)
+    delta_run_length_list = run_length_encode(delta_encoded_list)
+    delta_run_length_size = len(delta_run_length_list)
+
+    print(f"no encoding length:{no_encoding_size}\n"
+          f"rl only encoding length:{run_length_size}\n"
+          f"rl+delta only encoding length:{delta_run_length_size}")
+
+    if no_encoding_size <= run_length_size and no_encoding_size <= delta_run_length_size:
+        Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width, 0, 0)
+    elif run_length_size <= delta_run_length_size:
         Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width,
-                         rl_flag)
+                         1, 0)
+    else:
+        Huffman.save_isa(output_image_path, delta_run_length_list, compressed_quality, compressed_block_size, height,
+                         width, 1, 1)
 
 
 def save_pgm(filename, image):
@@ -248,4 +281,5 @@ def open_image(image_path):
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     else:
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # temporary
     return image
