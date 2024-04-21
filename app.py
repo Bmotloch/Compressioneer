@@ -1,3 +1,4 @@
+import cv2
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QPushButton,
     QMainWindow, QVBoxLayout, QHBoxLayout, QFileDialog, QSlider
@@ -6,7 +7,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5 import QtGui
 import compressor
 import os
-
+import numpy as np
 import helpers
 
 
@@ -25,6 +26,25 @@ class OpenFile(QThread):
             self.finished.emit()
         except Exception as e:
             self.opening_error.emit(str(e))
+
+
+class SaveFile(QThread):
+    saved = pyqtSignal(str)
+    saving_error = pyqtSignal(str)
+
+    def __init__(self, image, file_path, quality, block_size):
+        super().__init__()
+        self.image = image
+        self.file_path = file_path
+        self.quality = quality
+        self.block_size = block_size
+
+    def run(self):
+        try:
+            compressor.save_image(self.image, self.file_path, self.quality, self.block_size)
+            self.saved.emit(self.file_path)
+        except Exception as e:
+            self.saving_error.emit(str(e))
 
 
 class Compress(QThread):
@@ -54,6 +74,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.open_file_thread = None
         self.compress_thread = None
+        self.save_thread = None
         self.input_image_path = 'baboon.pgm'
         self.output_image_path = 'baboon.isa'
         self.quality = 50
@@ -63,31 +84,43 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QtGui.QIcon('assets/icon.jpg'))
         self.chosen_image = None
         self.compressed_image = None
-        self.max_display_width = 600
+        self.max_display_width = 500
+        self.max_display_height = 500
         self.temp_imp = QtGui.QPixmap("assets/hourglass.png").scaledToWidth(250)
+        self.font = QtGui.QFont("Arial", 10)
 
         self.file_button = QPushButton()
         self.file_button.setText("Open file")
+        self.file_button.setFont(self.font)
         self.file_button.clicked.connect(self.choose_file)
 
         self.compress_button = QPushButton()
         self.compress_button.setText("Start compression")
+        self.compress_button.setFont(self.font)
         self.compress_button.setEnabled(False)
         self.compress_button.clicked.connect(self.compress)
 
         self.save_button = QPushButton()
         self.save_button.setText("Save as")
+        self.save_button.setFont(self.font)
         self.save_button.setEnabled(False)
         self.save_button.clicked.connect(self.save_file_as)
+
+        self.difference_button = QPushButton()
+        self.difference_button.setText("Show difference")
+        self.difference_button.setFont(self.font)
+        self.difference_button.setEnabled(False)
+        self.difference_button.clicked.connect(self.show_difference)
 
         self.quality_slider = QSlider(Qt.Horizontal)
         self.quality_slider.setRange(1, 100)
         self.quality_slider.setValue(50)
-        self.quality_slider.setTickInterval(5)
+        self.quality_slider.setTickInterval(1)
         self.quality_slider.valueChanged.connect(self.set_quality)
 
         self.quality_slider_label = QLabel()
         self.quality_slider_label.setText(f"Quality: {self.quality}")
+        self.quality_slider_label.setFont(self.font)
 
         self.quality_slider_layout = QVBoxLayout()
         self.quality_slider_layout.addWidget(self.quality_slider_label)
@@ -96,11 +129,12 @@ class MainWindow(QMainWindow):
         self.block_size_slider = QSlider(Qt.Horizontal)
         self.block_size_slider.setRange(1, 32)
         self.block_size_slider.setValue(8)
-        self.block_size_slider.setTickInterval(4)
+        self.block_size_slider.setTickInterval(1)
         self.block_size_slider.valueChanged.connect(self.set_block_size)
 
         self.block_size_slider_label = QLabel()
         self.block_size_slider_label.setText(f"Block size: {self.block_size}")
+        self.block_size_slider_label.setFont(self.font)
 
         self.block_size_slider_layout = QVBoxLayout()
         self.block_size_slider_layout.addWidget(self.block_size_slider_label)
@@ -113,6 +147,7 @@ class MainWindow(QMainWindow):
         self.chosen_image_display = QLabel()
         self.chosen_image_display.setAlignment(Qt.AlignCenter)
         self.chosen_image_label = QLabel("Original Image")
+        self.chosen_image_label.setFont(self.font)
         self.chosen_image_label.setAlignment(Qt.AlignCenter)
 
         self.chosen_image_layout = QVBoxLayout()
@@ -127,6 +162,7 @@ class MainWindow(QMainWindow):
         self.compressed_image_display = QLabel()
         self.compressed_image_display.setAlignment(Qt.AlignCenter)
         self.compressed_image_label = QLabel("Compressed Image")
+        self.compressed_image_label.setFont(self.font)
         self.compressed_image_label.setAlignment(Qt.AlignCenter)
 
         self.compressed_image_layout = QVBoxLayout()
@@ -140,15 +176,19 @@ class MainWindow(QMainWindow):
 
         self.info_label = QLabel()
         self.info_label.setAlignment(Qt.AlignCenter)
+        self.info_label.setFont(self.font)
         self.metrics_label = QLabel()
         self.metrics_label.setAlignment(Qt.AlignCenter)
+        self.metrics_label.setFont(self.font)
         self.size_label = QLabel()
         self.size_label.setAlignment(Qt.AlignCenter)
+        self.size_label.setFont(self.font)
 
         self.button_layout = QVBoxLayout()
         self.button_layout.addWidget(self.file_button)
         self.button_layout.addWidget(self.compress_button)
         self.button_layout.addWidget(self.save_button)
+        self.button_layout.addWidget(self.difference_button)
         self.button_layout.addStretch()
 
         self.sliderLayout = QVBoxLayout()
@@ -171,7 +211,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(mainContainer)
 
         self.setGeometry(320, 180, 1280, 720)
-        self.setFixedSize(1280,720)
+        self.setFixedSize(1280, 720)
         self.setWindowTitle("Compressioneer")
 
     def choose_file(self):
@@ -197,15 +237,15 @@ class MainWindow(QMainWindow):
         self.chosen_temp_label.setVisible(False)
         self.chosen_image_display.setVisible(True)
         self.display_chosen_image()
-        width, height = self.chosen_image.shape
+        height, width = self.chosen_image.shape
         self.chosen_image_label.setText(f"Original Image {width}x{height}")
         self.compress_button.setEnabled(True)
+        self.difference_button.setEnabled(False)
 
     def open_file_error(self, error_message):
         self.print_info(f'Error opening file: {error_message}')
 
     def compress(self):
-        filename = os.path.basename(self.input_image_path)
         self.print_info('Compression started...')
         self.size_label.hide()
         self.compressed_image_display.setVisible(False)
@@ -221,11 +261,12 @@ class MainWindow(QMainWindow):
         self.compressed_quality = self.quality
         self.compressed_block_size = self.block_size
         self.save_button.setEnabled(True)
+        self.difference_button.setEnabled(True)
         self.print_info(f'Image {filename} compressed successfully!')
         self.compressed_temp_label.setVisible(False)
         self.compressed_image_display.setVisible(True)
         self.display_compressed_image()
-        width, height = self.compressed_image.shape
+        height, width = self.compressed_image.shape
         self.compressed_image_label.setText(f"Compressed Image {width}x{height}")
         self.print_metrics()
 
@@ -242,12 +283,20 @@ class MainWindow(QMainWindow):
             self.output_image_path = file_dialog.selectedFiles()[0]
             self.metrics_label.hide()
             self.print_info('Saving...')
-            compressor.save_image(self.compressed_image, self.output_image_path, self.compressed_quality,
-                                  self.compressed_block_size)
-            filename = os.path.basename(self.output_image_path)
-            self.print_info(f'Image saved as: {filename}')
-            self.print_size_dif()
-            self.save_button.setEnabled(False)
+            self.save_thread = SaveFile(self.compressed_image, self.output_image_path, self.compressed_quality,
+                                        self.compressed_block_size)
+            self.save_thread.saved.connect(self.file_saved)
+            self.save_thread.saving_error.connect(self.file_saving_error)
+            self.save_thread.start()
+
+    def file_saved(self, file_path):
+        filename = os.path.basename(file_path)
+        self.print_info(f'Image saved as: {filename}')
+        self.print_size_dif()
+        self.save_button.setEnabled(False)
+
+    def file_saving_error(self, error_message):
+        self.print_info(f'Saving failed: {error_message}')
 
     def print_info(self, text):
         self.info_label.setText(text)
@@ -263,7 +312,6 @@ class MainWindow(QMainWindow):
         original_size = round(os.path.getsize(self.input_image_path) / 1024)
         compressed_size = round(os.path.getsize(self.output_image_path) / 1024)
         dif = original_size - compressed_size
-        text = ""
         if dif > 0:
             text = f"Saved {dif}kb"
         elif dif < 0:
@@ -291,12 +339,15 @@ class MainWindow(QMainWindow):
 
     def display_chosen_image(self):
         height, width = self.chosen_image.shape
-        qImg = QtGui.QImage(self.chosen_image.tobytes(), width, height, QtGui.QImage.Format_Grayscale8)
+        bytes_per_line = width
+        qImg = QtGui.QImage(self.chosen_image.tobytes(), width, height, bytes_per_line, QtGui.QImage.Format_Grayscale8)
         pixmap = QtGui.QPixmap.fromImage(qImg)
+        if height > width:
+            scale_factor = self.max_display_height / height if height > 0 else 1.0
+        else:
+            scale_factor = self.max_display_width / width if width > 0 else 1.0
 
-        scale_factor = self.max_display_width / width if width > 0 else 1.0
         pixmap = pixmap.scaledToWidth(int(width * scale_factor))
-
         self.chosen_image_display.setPixmap(pixmap)
 
     def display_compressed_image(self):
@@ -305,8 +356,35 @@ class MainWindow(QMainWindow):
         qImg = QtGui.QImage(self.compressed_image.tobytes(), width, height, bytes_per_line,
                             QtGui.QImage.Format_Grayscale8)
         pixmap = QtGui.QPixmap.fromImage(qImg)
+        if height > width:
+            scale_factor = self.max_display_height / height if height > 0 else 1.0
+        else:
+            scale_factor = self.max_display_width / width if width > 0 else 1.0
 
-        scale_factor = self.max_display_width / width if width > 0 else 1.0
         pixmap = pixmap.scaledToWidth(int(width * scale_factor))
-
         self.compressed_image_display.setPixmap(pixmap)
+
+    def show_difference(self):
+        self.difference_button.setEnabled(False)
+        chosen_image_copy = self.chosen_image.copy()
+        compressed_image_copy = self.compressed_image.copy()
+        abs_difference_copy = np.abs(self.chosen_image - self.compressed_image).copy()
+        overlay_copy = cv2.addWeighted(self.chosen_image, 0.5, abs_difference_copy, 0.5, 0)
+        org_text = "Original"
+        comp_text = "Compressed"
+        abs_text = "Difference"
+        ove_text = "Overlay"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        text_color = (255, 255, 255)
+        text_pos = (10, 30)
+        abs_image_with_text = cv2.putText(abs_difference_copy, abs_text, text_pos, font, 1, text_color, 2)
+        ove_image_with_text = cv2.putText(overlay_copy, ove_text, text_pos, font, 1, text_color, 2)
+        original_image_with_text = cv2.putText(chosen_image_copy, org_text, text_pos, font, 1, text_color, 2)
+        compressed_image_with_text = cv2.putText(compressed_image_copy, comp_text, text_pos, font, 1, text_color, 2)
+        orig_comp = np.hstack((original_image_with_text, compressed_image_with_text))
+        abs_ove = np.hstack((abs_image_with_text, ove_image_with_text))
+        comparison_image = np.vstack((orig_comp, abs_ove))
+        comparison_image = cv2.resize(comparison_image, (720, 720))
+        cv2.imshow('Comparison', comparison_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()

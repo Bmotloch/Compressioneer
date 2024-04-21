@@ -104,4 +104,4 @@ def save_isa(filename, data, quality, block_size, height, width, rl_flag, delta_
     tree = build_huffman_tree(data)
     codes = generate_huffman_codes(tree)
     huff_encoded = huffman_encode(data, codes)
-    write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag, delta_flag)  # file written
+    write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag, delta_flag)

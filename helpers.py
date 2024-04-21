@@ -1,5 +1,4 @@
 import numpy as np
-import cv2
 
 
 def extend_to_32x32(quantization_table):

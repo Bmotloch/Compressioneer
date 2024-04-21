@@ -144,7 +144,7 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
     image = np.pad(image, ((0, pad_height), (0, pad_width)), mode='constant')
     dct_image = np.zeros_like(image)
 
-    base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
+    base_table = load_and_slice_quantization_table('assets\\extended_table.txt', block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     for i in range(0, padded_height, block_size_):
         for j in range(0, padded_width, block_size_):
@@ -183,7 +183,7 @@ def decompress_isa(encoded_image_path):
 
     compressed_img = np.zeros((padded_height, padded_width))
 
-    base_table = load_and_slice_quantization_table('extended_table.txt', block_size_)
+    base_table = load_and_slice_quantization_table('assets\\extended_table.txt', block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     zz_pattern = create_zig_zag_pattern(block_size_)
     zz_key = create_zigzag_key(zz_pattern, block_size_)
@@ -215,18 +215,15 @@ def save_image(dct_image, output_image_path, compressed_quality, compressed_bloc
 def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_size):
     height, width = dct_image.shape
 
-    # Calculate padding
     pad_height = (compressed_block_size - height % compressed_block_size) % compressed_block_size
     pad_width = (compressed_block_size - width % compressed_block_size) % compressed_block_size
     padded_height = height + pad_height
     padded_width = width + pad_width
 
-    base_table = load_and_slice_quantization_table('extended_table.txt', compressed_block_size)
+    base_table = load_and_slice_quantization_table('assets\\extended_table.txt', compressed_block_size)
     quantization_table = create_quantization_table(compressed_quality, base_table)
     zz_pattern = create_zig_zag_pattern(compressed_block_size)
     zz_img_list = []
-    delta_flag = 1
-    rl_flag = 1
     dct_image = np.pad(dct_image, ((0, pad_height), (0, pad_width)), mode='constant')
     for i in range(0, padded_height, compressed_block_size):
         for j in range(0, padded_width, compressed_block_size):
