@@ -4,17 +4,6 @@ from scipy.fft import dctn, idctn
 import Huffman
 import helpers
 
-"""
-def load_and_slice_quantization_table(file_path, slice_size):
-    quantization_table_32x32 = np.loadtxt(file_path, dtype=int)
-
-    if quantization_table_32x32.shape != (32, 32):
-        raise ValueError("Loaded quantization table must be 32x32")
-
-    sliced_table = quantization_table_32x32[:slice_size, :slice_size]
-    return sliced_table
-"""
-
 
 def create_quantization_table(quality_factor, base_table_):
     if quality_factor < 50:
