@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
         self.quality_slider_layout.addWidget(self.quality_slider)
 
         self.block_size_slider = QSlider(Qt.Horizontal)
-        self.block_size_slider.setRange(1, 32)
+        self.block_size_slider.setRange(1, 64)
         self.block_size_slider.setValue(8)
         self.block_size_slider.setTickInterval(1)
         self.block_size_slider.valueChanged.connect(self.set_block_size)

@@ -1,3 +1,6 @@
+import numpy as np
+
+import helpers
 from app import MainWindow
 import sys
 from PyQt5.QtWidgets import QApplication
@@ -8,3 +11,4 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+

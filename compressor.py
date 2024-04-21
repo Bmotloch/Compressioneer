@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 from scipy.fft import dctn, idctn
 import Huffman
+import helpers
 
-
+"""
 def load_and_slice_quantization_table(file_path, slice_size):
     quantization_table_32x32 = np.loadtxt(file_path, dtype=int)
 
@@ -12,13 +13,16 @@ def load_and_slice_quantization_table(file_path, slice_size):
 
     sliced_table = quantization_table_32x32[:slice_size, :slice_size]
     return sliced_table
+"""
 
 
 def create_quantization_table(quality_factor, base_table_):
     if quality_factor < 50:
         scaling_factor = 5000 / quality_factor
-    else:
+    elif 50 <= quality_factor < 100:
         scaling_factor = 200 - (quality_factor * 2)
+    else:
+        scaling_factor = 1
 
     scaled_table = np.clip(np.int32(np.floor((base_table_ * scaling_factor + 50) / 100)), 1, 255)
     return scaled_table
@@ -144,7 +148,7 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
     image = np.pad(image, ((0, pad_height), (0, pad_width)), mode='constant')
     dct_image = np.zeros_like(image)
 
-    base_table = load_and_slice_quantization_table('assets\\extended_table.txt', block_size_)
+    base_table = helpers.create_base_table(block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     for i in range(0, padded_height, block_size_):
         for j in range(0, padded_width, block_size_):
@@ -183,7 +187,7 @@ def decompress_isa(encoded_image_path):
 
     compressed_img = np.zeros((padded_height, padded_width))
 
-    base_table = load_and_slice_quantization_table('assets\\extended_table.txt', block_size_)
+    base_table = helpers.create_base_table(block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     zz_pattern = create_zig_zag_pattern(block_size_)
     zz_key = create_zigzag_key(zz_pattern, block_size_)
@@ -220,7 +224,7 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
     padded_height = height + pad_height
     padded_width = width + pad_width
 
-    base_table = load_and_slice_quantization_table('assets\\extended_table.txt', compressed_block_size)
+    base_table = helpers.create_base_table(compressed_block_size)
     quantization_table = create_quantization_table(compressed_quality, base_table)
     zz_pattern = create_zig_zag_pattern(compressed_block_size)
     zz_img_list = []

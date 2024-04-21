@@ -39,13 +39,68 @@ def extend_to_32x32(quantization_table):
     return np.round(extended_table).astype(int)
 
 
-def make_symmetrical_quantization_table(quantization_table):
-    if quantization_table.shape != (8, 8):
-        raise ValueError("Input quantization table must be 8x8")
+def make_symmetrical_quantization_table():
+    quantization_table = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
+                                   [12, 12, 14, 19, 26, 58, 60, 55],
+                                   [14, 13, 16, 24, 40, 57, 69, 56],
+                                   [14, 17, 22, 29, 51, 87, 80, 62],
+                                   [18, 22, 37, 56, 68, 109, 103, 77],
+                                   [24, 35, 55, 64, 81, 104, 113, 92],
+                                   [49, 64, 78, 87, 103, 121, 120, 101],
+                                   [72, 92, 95, 98, 112, 100, 103, 99]])
 
     symmetrical_table = (quantization_table + quantization_table.T) // 2
 
     return symmetrical_table
+
+
+def interpolate(matrix, new_size):
+    height, width = matrix.shape
+    new_matrix = np.zeros((new_size, new_size), dtype=np.uint8)
+
+    if new_size == 1:
+        return np.ones((1, 1), dtype=np.uint8) * 16
+
+    x_ratio = float(width - 1) / (new_size - 1)
+    y_ratio = float(height - 1) / (new_size - 1)
+
+    for i in range(new_size):
+        for j in range(new_size):
+            x = int(x_ratio * i)
+            y = int(y_ratio * j)
+            x_diff = (x_ratio * i) - x
+            y_diff = (y_ratio * j) - y
+
+            # Handling boundary conditions
+            if x == width - 1:
+                x = width - 2
+            if y == height - 1:
+                y = height - 2
+
+            # Bilinear interpolation
+            interpolated_value = (1 - x_diff) * (1 - y_diff) * matrix[y][x] + \
+                                 x_diff * (1 - y_diff) * matrix[y][x + 1] + \
+                                 (1 - x_diff) * y_diff * matrix[y + 1][x] + \
+                                 x_diff * y_diff * matrix[y + 1][x + 1]
+
+            new_matrix[j][i] = interpolated_value
+
+    return new_matrix
+
+
+def create_base_table(block_size):
+    template_table = np.array([[16, 11, 12, 15, 21, 32, 50, 66],
+                               [11, 12, 13, 18, 24, 46, 62, 73],
+                               [12, 13, 16, 23, 38, 56, 73, 75],
+                               [15, 18, 23, 29, 53, 75, 83, 80],
+                               [21, 24, 38, 53, 68, 95, 103, 94],
+                               [32, 46, 56, 75, 95, 104, 117, 96],
+                               [50, 62, 73, 83, 103, 117, 120, 102],
+                               [66, 73, 75, 80, 94, 96, 102, 99]])
+
+    base_table = interpolate(template_table, block_size)
+
+    return base_table
 
 
 def calculate_mse(original_img, compressed_img):
