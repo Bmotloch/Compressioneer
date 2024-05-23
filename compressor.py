@@ -157,15 +157,11 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
 
 
 def decompress_isa(encoded_image_path):
-    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_, delta_flag_ = Huffman.read_isa_file(
+    encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
         encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
-    print(f"rl_flag:{rl_flag_}\n"  # seems to prefer only run length
-          f"delta_flag:{delta_flag_}")
-    if rl_flag_ == 1 and delta_flag_ == 1:
-        decoded_run_length_list = run_length_decode(decoded_isa_data)
-        dct_data = decode_delta(decoded_run_length_list)
-    elif rl_flag_ == 1 and delta_flag_ == 0:
+    print(f"rl_flag:{rl_flag_}\n")
+    if rl_flag_ == 1:
         dct_data = run_length_decode(decoded_isa_data)
     else:
         dct_data = decoded_isa_data
@@ -233,22 +229,14 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
     run_length_list = run_length_encode(zz_img_list)
     run_length_size = len(run_length_list)
 
-    delta_encoded_list = delta_encode(zz_img_list)
-    delta_run_length_list = run_length_encode(delta_encoded_list)
-    delta_run_length_size = len(delta_run_length_list)
-
     print(f"no encoding length:{no_encoding_size}\n"
-          f"rl only encoding length:{run_length_size}\n"
-          f"rl+delta only encoding length:{delta_run_length_size}")
+          f"rl only encoding length:{run_length_size}")
 
-    if no_encoding_size <= run_length_size and no_encoding_size <= delta_run_length_size:
-        Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width, 0, 0)
-    elif run_length_size <= delta_run_length_size:
-        Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width,
-                         1, 0)
+    if no_encoding_size <= run_length_size:
+        Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width, 0)
     else:
-        Huffman.save_isa(output_image_path, delta_run_length_list, compressed_quality, compressed_block_size, height,
-                         width, 1, 1)
+        Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width,
+                         1)
 
 
 def save_pgm(filename, image):

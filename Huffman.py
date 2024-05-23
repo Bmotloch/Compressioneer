@@ -63,7 +63,7 @@ def huffman_decode(encoded_data, huffman_codes):
     return decoded_data
 
 
-def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, height, width, rl_flag, delta_flag):
+def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, height, width, rl_flag):
     data_to_write = {
         'encoded_data': encoded_data,
         'huffman_codes': huffman_codes,
@@ -72,7 +72,6 @@ def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, h
         'height': height,
         'width': width,
         'rl_flag': rl_flag,
-        'delta_flag': delta_flag
     }
 
     compressed_data = zlib.compress(pickle.dumps(data_to_write))
@@ -96,12 +95,11 @@ def read_isa_file(filename):
         data['height'],
         data['width'],
         data['rl_flag'],
-        data['delta_flag']
     )
 
 
-def save_isa(filename, data, quality, block_size, height, width, rl_flag, delta_flag):
+def save_isa(filename, data, quality, block_size, height, width, rl_flag):
     tree = build_huffman_tree(data)
     codes = generate_huffman_codes(tree)
     huff_encoded = huffman_encode(data, codes)
-    write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag, delta_flag)
+    write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag)
