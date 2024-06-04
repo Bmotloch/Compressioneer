@@ -3,6 +3,7 @@ import numpy as np
 from scipy.fft import dctn, idctn
 import Huffman
 import helpers
+import time
 
 
 def create_quantization_table(quality_factor, base_table_):
@@ -119,13 +120,14 @@ def run_length_decode(run_length_encoded_list):
 
 
 def perform_dct(input_image_path, quality_=50, block_size_=8):
+    start_time = time.time()
     if input_image_path.endswith('.isa'):
         image = decompress_isa(input_image_path)
     elif input_image_path.endswith('.pgm'):
         image = cv2.imread(input_image_path, cv2.IMREAD_GRAYSCALE)
     else:
         image = cv2.imread(input_image_path, cv2.IMREAD_COLOR)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # temporary
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     height_, width_ = image.shape
 
@@ -153,6 +155,8 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
             dct_image[i:i + block_size_, j:j + block_size_] = block
 
     dct_image = np.uint8(dct_image[:height_, :width_])
+    end_time = time.time()
+    print(f"Compression operation time: {end_time - start_time:.6f} seconds")
     return dct_image
 
 
@@ -160,7 +164,6 @@ def decompress_isa(encoded_image_path):
     encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
         encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
-    print(f"rl_flag:{rl_flag_}\n")
     if rl_flag_ == 1:
         dct_data = run_length_decode(decoded_isa_data)
     else:
@@ -229,9 +232,6 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
     run_length_list = run_length_encode(zz_img_list)
     run_length_size = len(run_length_list)
 
-    print(f"no encoding length:{no_encoding_size}\n"
-          f"rl only encoding length:{run_length_size}")
-
     if no_encoding_size <= run_length_size:
         Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width, 0)
     else:
@@ -253,11 +253,15 @@ def save_pgm(filename, image):
 
 
 def open_image(image_path):
+    start_time = time.time()
     if image_path.endswith('.isa'):
         image = decompress_isa(image_path)
     elif image_path.endswith('.pgm'):
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     else:
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # temporary
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    end_time = time.time()
+    print(f"Open operation time: {end_time - start_time:.6f} seconds")
     return image

@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="dynamic base_table, up to 64 block_size">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="removed delta encoding">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Huffman.py" beforeDir="false" afterPath="$PROJECT_DIR$/Huffman.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/coins.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/coins.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/img0001.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/img0001.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/mona_lisa.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/mona_lisa.isa" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -296,7 +293,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713731664855</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="removed delta encoding">
+      <option name="closed" value="true" />
+      <created>1716486690279</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1716486690279</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -332,7 +337,8 @@
     <MESSAGE value="added delta encoding after zigzag, read/write in binary, opening jpg/png, saving jpg/png as grayscale" />
     <MESSAGE value="added saving on thread, simple pre-post image comparison in opencv,ui changes" />
     <MESSAGE value="dynamic base_table, up to 64 block_size" />
-    <option name="LAST_COMMIT_MESSAGE" value="dynamic base_table, up to 64 block_size" />
+    <MESSAGE value="removed delta encoding" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed delta encoding" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
