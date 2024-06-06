@@ -156,7 +156,7 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
 
     dct_image = np.uint8(dct_image[:height_, :width_])
     end_time = time.time()
-    print(f"Compression operation time: {end_time - start_time:.6f} seconds")
+    # print(f"Compression operation time: {end_time - start_time:.6f} seconds")
     return dct_image
 
 
@@ -239,6 +239,46 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
                          1)
 
 
+def save_isa_testing(output_image_path, dct_image, compressed_quality, compressed_block_size):
+    compression_time_start = time.time()
+    height, width = dct_image.shape
+
+    pad_height = (compressed_block_size - height % compressed_block_size) % compressed_block_size
+    pad_width = (compressed_block_size - width % compressed_block_size) % compressed_block_size
+    padded_height = height + pad_height
+    padded_width = width + pad_width
+
+    base_table = helpers.create_base_table(compressed_block_size)
+    quantization_table = create_quantization_table(compressed_quality, base_table)
+    zz_pattern = create_zig_zag_pattern(compressed_block_size)
+    zz_img_list = []
+    dct_image = np.pad(dct_image, ((0, pad_height), (0, pad_width)), mode='constant')
+    for i in range(0, padded_height, compressed_block_size):
+        for j in range(0, padded_width, compressed_block_size):
+            block = dct_image[i:i + compressed_block_size, j:j + compressed_block_size]
+            block = np.float64(block)
+            block = block - 128
+            block = dctn(block, norm='ortho')
+            block = np.round(np.divide(block, quantization_table))
+            zigzag_block = zigzag_transform(block.flatten(), zz_pattern)
+            zz_img_list.extend(zigzag_block.flatten())
+    compression_time_end = time.time()
+    compression_time = compression_time_end - compression_time_start
+    no_encoding_size = len(zz_img_list)
+
+    run_length_list = run_length_encode(zz_img_list)
+    run_length_size = len(run_length_list)
+
+    if no_encoding_size <= run_length_size:
+        Huffman.save_isa(output_image_path, zz_img_list, compressed_quality, compressed_block_size, height, width, 0)
+    else:
+        Huffman.save_isa(output_image_path, run_length_list, compressed_quality, compressed_block_size, height, width,
+                         1)
+    saving_time_end = time.time()
+    saving_time = saving_time_end - compression_time_end
+    return compression_time, saving_time
+
+
 def save_pgm(filename, image):
     with open(filename, 'w') as f:
         f.write("P2\n")
@@ -263,5 +303,5 @@ def open_image(image_path):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     end_time = time.time()
-    print(f"Open operation time: {end_time - start_time:.6f} seconds")
+    # print(f"Open operation time: {end_time - start_time:.6f} seconds")
     return image

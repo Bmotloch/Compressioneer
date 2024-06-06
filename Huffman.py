@@ -111,4 +111,4 @@ def save_isa(filename, data, quality, block_size, height, width, rl_flag):
     write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag)
 
     end_time = time.time()
-    print(f"Save operation time: {end_time - start_time:.6f} seconds")
+    # print(f"Save operation time: {end_time - start_time:.6f} seconds")

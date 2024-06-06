@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="removed delta encoding">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added timing for opening, compression and saving, improved huffman decoding speed">
+      <change afterPath="$PROJECT_DIR$/fractal.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lena.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pbmlib.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Huffman.py" beforeDir="false" afterPath="$PROJECT_DIR$/Huffman.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,6 +61,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
@@ -301,7 +305,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716486690279</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="added timing for opening, compression and saving, improved huffman decoding speed">
+      <option name="closed" value="true" />
+      <created>1717523400872</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1717523400872</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -338,7 +350,8 @@
     <MESSAGE value="added saving on thread, simple pre-post image comparison in opencv,ui changes" />
     <MESSAGE value="dynamic base_table, up to 64 block_size" />
     <MESSAGE value="removed delta encoding" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed delta encoding" />
+    <MESSAGE value="added timing for opening, compression and saving, improved huffman decoding speed" />
+    <option name="LAST_COMMIT_MESSAGE" value="added timing for opening, compression and saving, improved huffman decoding speed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
