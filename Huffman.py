@@ -2,7 +2,6 @@ import heapq
 from collections import Counter
 import pickle
 import zlib
-import time
 
 
 class Node:
@@ -103,12 +102,7 @@ def read_isa_file(filename):
 
 
 def save_isa(filename, data, quality, block_size, height, width, rl_flag):
-    start_time = time.time()
-
     tree = build_huffman_tree(data)
     codes = generate_huffman_codes(tree)
     huff_encoded = huffman_encode(data, codes)
     write_isa_file(filename, huff_encoded, codes, quality, block_size, height, width, rl_flag)
-
-    end_time = time.time()
-    # print(f"Save operation time: {end_time - start_time:.6f} seconds")

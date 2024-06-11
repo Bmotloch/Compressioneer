@@ -1,21 +1,29 @@
+import gc
+
 import cv2
 import numpy as np
 from scipy.fft import dctn, idctn
+from joblib import Parallel, delayed
 import Huffman
 import helpers
 import time
 
 
 def create_quantization_table(quality_factor, base_table_):
+    if quality_factor < 1:
+        quality_factor = 1
+    elif quality_factor > 100:
+        quality_factor = 100
+
     if quality_factor < 50:
         scaling_factor = 5000 / quality_factor
-    elif 50 <= quality_factor < 100:
-        scaling_factor = 200 - (quality_factor * 2)
     else:
-        scaling_factor = 1
+        scaling_factor = 200 - 2 * quality_factor
 
-    scaled_table = np.clip(np.int32(np.floor((base_table_ * scaling_factor + 50) / 100)), 1, 255)
-    return scaled_table
+    scaled_quant_table = ((base_table_ * scaling_factor) + 50) // 100
+    scaled_quant_table = np.clip(scaled_quant_table, 1, 255)
+
+    return scaled_quant_table.astype(int)
 
 
 def create_zig_zag_pattern(block_size_=8):
@@ -77,22 +85,6 @@ def create_zigzag_key(zz_pattern, block_size):
     return key
 
 
-def delta_encode(data):
-    delta_encoded = [data[0]]
-    for i in range(1, len(data)):
-        delta = data[i] - data[i - 1]
-        delta_encoded.append(delta)
-    return delta_encoded
-
-
-def decode_delta(delta_encoded):
-    original_data = [delta_encoded[0]]
-    for i in range(1, len(delta_encoded)):
-        original_value = original_data[i - 1] + delta_encoded[i]
-        original_data.append(original_value)
-    return original_data
-
-
 def run_length_encode(zz_img_list):
     run_length_encoded_list = []
     i = 0
@@ -120,7 +112,6 @@ def run_length_decode(run_length_encoded_list):
 
 
 def perform_dct(input_image_path, quality_=50, block_size_=8):
-    start_time = time.time()
     if input_image_path.endswith('.isa'):
         image = decompress_isa(input_image_path)
     elif input_image_path.endswith('.pgm'):
@@ -155,12 +146,11 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
             dct_image[i:i + block_size_, j:j + block_size_] = block
 
     dct_image = np.uint8(dct_image[:height_, :width_])
-    end_time = time.time()
-    # print(f"Compression operation time: {end_time - start_time:.6f} seconds")
     return dct_image
 
 
 def decompress_isa(encoded_image_path):
+    # Reading encoded data
     encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
         encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
@@ -168,30 +158,49 @@ def decompress_isa(encoded_image_path):
         dct_data = run_length_decode(decoded_isa_data)
     else:
         dct_data = decoded_isa_data
+
+    # Padding calculations
     pad_height = (block_size_ - height_ % block_size_) % block_size_
     pad_width = (block_size_ - width_ % block_size_) % block_size_
     padded_height = height_ + pad_height
     padded_width = width_ + pad_width
 
-    compressed_img = np.zeros((padded_height, padded_width))
+    compressed_img = np.zeros((padded_height, padded_width), dtype=np.float32)  # Specify dtype to save memory
 
     base_table = helpers.create_base_table(block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     zz_pattern = create_zig_zag_pattern(block_size_)
     zz_key = create_zigzag_key(zz_pattern, block_size_)
-    idx = 0
-    for i in range(0, padded_height, block_size_):
-        for j in range(0, padded_width, block_size_):
-            block_data = dct_data[idx:idx + block_size_ ** 2]
-            block = reverse_zigzag_transform(block_data, zz_pattern, zz_key)
-            idx += block_size_ ** 2
-            block = np.multiply(block, quantization_table)
-            block = idctn(block, norm='ortho')
-            block = block + 128
-            block = np.clip(block, 0, 255)
-            compressed_img[i:i + block_size_, j:j + block_size_] = block
 
+    def process_block(start_idx, block_size_, dct_data, zz_pattern, zz_key, quantization_table):
+        block_data = dct_data[start_idx:start_idx + block_size_ ** 2]
+        block = reverse_zigzag_transform(block_data, zz_pattern, zz_key)
+        block = np.multiply(block, quantization_table)
+        block = idctn(block, norm='ortho')
+        block = block + 128
+        return np.clip(block, 0, 255)
+
+    indices = [(i, j) for i in range(0, padded_height, block_size_) for j in range(0, padded_width, block_size_)]
+    start_indices = [idx * block_size_ ** 2 for idx in range(len(indices))]
+
+    blocks = Parallel(n_jobs=-1, backend="threading")(
+        delayed(process_block)(start_idx, block_size_, dct_data, zz_pattern, zz_key, quantization_table)
+        for start_idx in start_indices
+    )
+
+    # Place the blocks back into the image
+    idx = 0
+    for i, j in indices:
+        compressed_img[i:i + block_size_, j:j + block_size_] = blocks[idx]
+        idx += 1
+
+    # Convert to uint8 and trim padding
     decompressed_img = np.uint8(compressed_img[:height_, :width_])
+
+    # Clear unused variables and force garbage collection
+    del blocks, dct_data, decoded_isa_data, compressed_img
+    gc.collect()
+
     return decompressed_img
 
 
@@ -293,7 +302,6 @@ def save_pgm(filename, image):
 
 
 def open_image(image_path):
-    start_time = time.time()
     if image_path.endswith('.isa'):
         image = decompress_isa(image_path)
     elif image_path.endswith('.pgm'):
@@ -301,7 +309,4 @@ def open_image(image_path):
     else:
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    end_time = time.time()
-    # print(f"Open operation time: {end_time - start_time:.6f} seconds")
     return image
