@@ -4,12 +4,12 @@ import csv
 import compressor
 import helpers
 
-input_filepath = 'images\\samples\\pbmlib.pgm'
+input_filepath = 'images\\samples\\lena.pgm'
 output_filepath = 'test_image.isa'
 
 test_image = compressor.open_image(input_filepath)
 
-csv_filename = 'pbmlib.csv'
+csv_filename = 'lena.csv'
 
 
 with open(csv_filename, mode='w', newline='') as file:
@@ -28,7 +28,7 @@ for quality in range(1, 101):
         opening_time = opened_dct_time_end - opened_dct_time_start
         mse = helpers.calculate_mse(test_image, opened_dct_image)
         psnr = helpers.calculate_psnr(test_image, opened_dct_image)
-        size = round(os.path.getsize(output_filepath) / 1024)
+        size = os.path.getsize(output_filepath)/1024
         print(f"Progress: Quality {quality}, Block Size {block_size}")
 
         with open(csv_filename, mode='a', newline='') as file:

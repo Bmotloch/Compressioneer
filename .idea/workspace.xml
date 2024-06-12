@@ -4,14 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="added testing file, csv data files">
-      <change afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="intro to speedup">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Huffman.py" beforeDir="false" afterPath="$PROJECT_DIR$/Huffman.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/images/modified/fractal_tree.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/fractal_tree.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/img0001.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/img0001.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/mona_lisa.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/mona_lisa.isa" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lena.csv" beforeDir="false" afterPath="$PROJECT_DIR$/lena.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pbmlib.csv" beforeDir="false" afterPath="$PROJECT_DIR$/pbmlib.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_image.isa" beforeDir="false" afterPath="$PROJECT_DIR$/test_image.isa" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,18 +59,18 @@
     <option name="openDirectoriesWithSingleClick" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "Python.plotting.executor": "Run",
-    "Python.testing.executor": "Run",
-    "Python.texter.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plotting.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.texter.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\48782\PycharmProjects\IMS" />
@@ -323,7 +324,15 @@
       <option name="project" value="LOCAL" />
       <updated>1717712779250</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="intro to speedup">
+      <option name="closed" value="true" />
+      <created>1718146769403</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1718146769403</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -362,7 +371,8 @@
     <MESSAGE value="removed delta encoding" />
     <MESSAGE value="added timing for opening, compression and saving, improved huffman decoding speed" />
     <MESSAGE value="added testing file, csv data files" />
-    <option name="LAST_COMMIT_MESSAGE" value="added testing file, csv data files" />
+    <MESSAGE value="intro to speedup" />
+    <option name="LAST_COMMIT_MESSAGE" value="intro to speedup" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

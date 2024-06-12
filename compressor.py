@@ -1,9 +1,6 @@
-import gc
-
 import cv2
 import numpy as np
 from scipy.fft import dctn, idctn
-from joblib import Parallel, delayed
 import Huffman
 import helpers
 import time
@@ -150,7 +147,7 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
 
 
 def decompress_isa(encoded_image_path):
-    # Reading encoded data
+    start = time.time()
     encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
         encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
@@ -158,49 +155,32 @@ def decompress_isa(encoded_image_path):
         dct_data = run_length_decode(decoded_isa_data)
     else:
         dct_data = decoded_isa_data
-
-    # Padding calculations
     pad_height = (block_size_ - height_ % block_size_) % block_size_
     pad_width = (block_size_ - width_ % block_size_) % block_size_
     padded_height = height_ + pad_height
     padded_width = width_ + pad_width
 
-    compressed_img = np.zeros((padded_height, padded_width), dtype=np.float32)  # Specify dtype to save memory
+    compressed_img = np.zeros((padded_height, padded_width))
 
     base_table = helpers.create_base_table(block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     zz_pattern = create_zig_zag_pattern(block_size_)
     zz_key = create_zigzag_key(zz_pattern, block_size_)
-
-    def process_block(start_idx, block_size_, dct_data, zz_pattern, zz_key, quantization_table):
-        block_data = dct_data[start_idx:start_idx + block_size_ ** 2]
-        block = reverse_zigzag_transform(block_data, zz_pattern, zz_key)
-        block = np.multiply(block, quantization_table)
-        block = idctn(block, norm='ortho')
-        block = block + 128
-        return np.clip(block, 0, 255)
-
-    indices = [(i, j) for i in range(0, padded_height, block_size_) for j in range(0, padded_width, block_size_)]
-    start_indices = [idx * block_size_ ** 2 for idx in range(len(indices))]
-
-    blocks = Parallel(n_jobs=-1, backend="threading")(
-        delayed(process_block)(start_idx, block_size_, dct_data, zz_pattern, zz_key, quantization_table)
-        for start_idx in start_indices
-    )
-
-    # Place the blocks back into the image
     idx = 0
-    for i, j in indices:
-        compressed_img[i:i + block_size_, j:j + block_size_] = blocks[idx]
-        idx += 1
+    for i in range(0, padded_height, block_size_):
+        for j in range(0, padded_width, block_size_):
+            block_data = dct_data[idx:idx + block_size_ ** 2]
+            block = reverse_zigzag_transform(block_data, zz_pattern, zz_key)
+            idx += block_size_ ** 2
+            block = np.multiply(block, quantization_table)
+            block = idctn(block, norm='ortho')
+            block = block + 128
+            block = np.clip(block, 0, 255)
+            compressed_img[i:i + block_size_, j:j + block_size_] = block
 
-    # Convert to uint8 and trim padding
     decompressed_img = np.uint8(compressed_img[:height_, :width_])
-
-    # Clear unused variables and force garbage collection
-    del blocks, dct_data, decoded_isa_data, compressed_img
-    gc.collect()
-
+    end = time.time()
+    print(f'{end - start}')
     return decompressed_img
 
 
