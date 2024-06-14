@@ -4,10 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="intro to speedup">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="plotting">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Huffman.py" beforeDir="false" afterPath="$PROJECT_DIR$/Huffman.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fractal.csv" beforeDir="false" afterPath="$PROJECT_DIR$/fractal.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/helpers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/images/modified/fractal_tree.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/fractal_tree.isa" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/modified/fractal_tree.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/fractal_tree.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lena.csv" beforeDir="false" afterPath="$PROJECT_DIR$/lena.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pbmlib.csv" beforeDir="false" afterPath="$PROJECT_DIR$/pbmlib.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
@@ -61,6 +65,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Python.compressor.executor&quot;: &quot;Run&quot;,
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;Python.plotting.executor&quot;: &quot;Run&quot;,
     &quot;Python.testing.executor&quot;: &quot;Run&quot;,
@@ -332,7 +337,15 @@
       <option name="project" value="LOCAL" />
       <updated>1718146769403</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="plotting">
+      <option name="closed" value="true" />
+      <created>1718232134413</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1718232134413</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -347,7 +360,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Init" />
     <MESSAGE value="Testing basics" />
     <MESSAGE value="4x4 blocking, without zig-zag and encoding" />
     <MESSAGE value="added p2 pgm saving" />
@@ -372,7 +384,8 @@
     <MESSAGE value="added timing for opening, compression and saving, improved huffman decoding speed" />
     <MESSAGE value="added testing file, csv data files" />
     <MESSAGE value="intro to speedup" />
-    <option name="LAST_COMMIT_MESSAGE" value="intro to speedup" />
+    <MESSAGE value="plotting" />
+    <option name="LAST_COMMIT_MESSAGE" value="plotting" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -11,7 +11,6 @@ test_image = compressor.open_image(input_filepath)
 
 csv_filename = 'lena.csv'
 
-
 with open(csv_filename, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(

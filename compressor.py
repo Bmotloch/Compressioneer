@@ -7,20 +7,15 @@ import time
 
 
 def create_quantization_table(quality_factor, base_table_):
-    if quality_factor < 1:
-        quality_factor = 1
-    elif quality_factor > 100:
-        quality_factor = 100
-
     if quality_factor < 50:
         scaling_factor = 5000 / quality_factor
     else:
         scaling_factor = 200 - 2 * quality_factor
 
-    scaled_quant_table = ((base_table_ * scaling_factor) + 50) // 100
-    scaled_quant_table = np.clip(scaled_quant_table, 1, 255)
+    base_table_ = ((base_table_ * scaling_factor) + 50) // 100
+    base_table_ = np.clip(base_table_, 1, 255)
 
-    return scaled_quant_table.astype(int)
+    return base_table_.astype(int)
 
 
 def create_zig_zag_pattern(block_size_=8):
@@ -57,29 +52,21 @@ def create_zig_zag_pattern(block_size_=8):
 
 def zigzag_transform(block, zz_pattern):
     block_size_ = int(np.sqrt(len(zz_pattern)))
-    zigzag_block = np.zeros((block_size_, block_size_), dtype=np.int32)
+    zz_list = []
 
-    for i, (y, x) in enumerate(zz_pattern):
-        zigzag_block[y, x] = block[i]
+    for y, x in zz_pattern:
+        zz_list.append(block[y, x])
 
-    return zigzag_block
+    return zz_list
 
 
-def reverse_zigzag_transform(zigzag_block, zz_pattern, key):
+def reverse_zigzag_transform(zigzag_block, zz_pattern):
     block_size_ = int(np.sqrt(len(zz_pattern)))
     block = np.zeros((block_size_, block_size_), dtype=np.int32)
-    block = block.flatten()
-    for i in range(len(key)):
-        block[i] = zigzag_block[key[i]]
+    for i, (y, x) in enumerate(zz_pattern):
+        block[y, x] = zigzag_block[i]
+
     return block.reshape((block_size_, block_size_))
-
-
-def create_zigzag_key(zz_pattern, block_size):
-    x, y = zip(*zz_pattern)
-    key = [0] * (len(zz_pattern))
-    for i in range(len(zz_pattern)):
-        key[i] = x[i] * block_size + y[i]
-    return key
 
 
 def run_length_encode(zz_img_list):
@@ -147,7 +134,6 @@ def perform_dct(input_image_path, quality_=50, block_size_=8):
 
 
 def decompress_isa(encoded_image_path):
-    start = time.time()
     encoded_isa_data, isa_codes, quality_, block_size_, height_, width_, rl_flag_ = Huffman.read_isa_file(
         encoded_image_path)
     decoded_isa_data = Huffman.huffman_decode(encoded_isa_data, isa_codes)
@@ -165,12 +151,11 @@ def decompress_isa(encoded_image_path):
     base_table = helpers.create_base_table(block_size_)
     quantization_table = create_quantization_table(quality_, base_table)
     zz_pattern = create_zig_zag_pattern(block_size_)
-    zz_key = create_zigzag_key(zz_pattern, block_size_)
     idx = 0
     for i in range(0, padded_height, block_size_):
         for j in range(0, padded_width, block_size_):
             block_data = dct_data[idx:idx + block_size_ ** 2]
-            block = reverse_zigzag_transform(block_data, zz_pattern, zz_key)
+            block = reverse_zigzag_transform(block_data, zz_pattern)
             idx += block_size_ ** 2
             block = np.multiply(block, quantization_table)
             block = idctn(block, norm='ortho')
@@ -179,8 +164,6 @@ def decompress_isa(encoded_image_path):
             compressed_img[i:i + block_size_, j:j + block_size_] = block
 
     decompressed_img = np.uint8(compressed_img[:height_, :width_])
-    end = time.time()
-    print(f'{end - start}')
     return decompressed_img
 
 
@@ -212,9 +195,9 @@ def save_isa(output_image_path, dct_image, compressed_quality, compressed_block_
             block = np.float64(block)
             block = block - 128
             block = dctn(block, norm='ortho')
-            block = np.round(np.divide(block, quantization_table))
-            zigzag_block = zigzag_transform(block.flatten(), zz_pattern)
-            zz_img_list.extend(zigzag_block.flatten())
+            block = np.round(np.divide(block, quantization_table)).astype(int)
+            zigzag_list = zigzag_transform(block, zz_pattern)
+            zz_img_list.extend(zigzag_list)
 
     no_encoding_size = len(zz_img_list)
 
@@ -248,9 +231,9 @@ def save_isa_testing(output_image_path, dct_image, compressed_quality, compresse
             block = np.float64(block)
             block = block - 128
             block = dctn(block, norm='ortho')
-            block = np.round(np.divide(block, quantization_table))
-            zigzag_block = zigzag_transform(block.flatten(), zz_pattern)
-            zz_img_list.extend(zigzag_block.flatten())
+            block = np.round(np.divide(block, quantization_table)).astype(int)
+            zigzag_block = zigzag_transform(block, zz_pattern)
+            zz_img_list.extend(zigzag_block)
     compression_time_end = time.time()
     compression_time = compression_time_end - compression_time_start
     no_encoding_size = len(zz_img_list)

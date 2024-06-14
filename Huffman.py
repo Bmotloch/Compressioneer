@@ -67,8 +67,10 @@ def huffman_decode(encoded_data, huffman_codes):
 
 
 def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, height, width, rl_flag):
+    encoded_bytes = binary_string_to_bytes(encoded_data)
+
     data_to_write = {
-        'encoded_data': encoded_data,
+        'encoded_data': encoded_bytes,
         'huffman_codes': huffman_codes,
         'quality': quality,
         'block_size': block_size,
@@ -83,15 +85,28 @@ def write_isa_file(filename, encoded_data, huffman_codes, quality, block_size, h
         f.write(compressed_data)
 
 
+def binary_string_to_bytes(binary_string):
+    padding_len = (8 - len(binary_string) % 8) % 8
+    binary_string = f"{padding_len:08b}" + binary_string + '0' * padding_len
+    return bytes(int(binary_string[i: i + 8], 2) for i in range(0, len(binary_string), 8))
+
+
+def bytes_to_binary_string(byte_array):
+    padding_len = byte_array[0]
+    binary_string = ''.join(format(byte, '08b') for byte in byte_array[1:])
+    return binary_string[:-padding_len] if padding_len > 0 else binary_string
+
+
 def read_isa_file(filename):
     with open(filename, 'rb') as f:
         compressed_data = f.read()
 
     decompressed_data = zlib.decompress(compressed_data)
     data = pickle.loads(decompressed_data)
+    encoded_data = bytes_to_binary_string(data['encoded_data'])
 
     return (
-        data['encoded_data'],
+        encoded_data,
         data['huffman_codes'],
         data['quality'],
         data['block_size'],

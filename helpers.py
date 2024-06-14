@@ -3,10 +3,10 @@ import numpy as np
 
 def interpolate(matrix, new_size):
     height, width = matrix.shape
-    new_matrix = np.zeros((new_size, new_size), dtype=np.uint8)
+    new_matrix = np.zeros((new_size, new_size), dtype=np.int32)
 
     if new_size == 1:
-        return np.ones((1, 1), dtype=np.uint8) * 16
+        return np.ones((1, 1), dtype=np.int32) * 16
 
     x_ratio = float(width - 1) / (new_size - 1)
     y_ratio = float(height - 1) / (new_size - 1)
@@ -28,7 +28,7 @@ def interpolate(matrix, new_size):
                                  (1 - x_diff) * y_diff * matrix[y + 1][x] + \
                                  x_diff * y_diff * matrix[y + 1][x + 1]
 
-            new_matrix[j][i] = interpolated_value
+            new_matrix[j][i] = int(interpolated_value)
 
     return new_matrix
 
