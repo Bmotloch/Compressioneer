@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="plotting">
+    <list default="true" id="1f2b204a-46ee-4bbb-b193-345da77eced4" name="Changes" comment="huge update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Huffman.py" beforeDir="false" afterPath="$PROJECT_DIR$/Huffman.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/compressor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fractal.csv" beforeDir="false" afterPath="$PROJECT_DIR$/fractal.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/fractal_tree.isa" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/fractal_tree.isa" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/modified/fractal_tree.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/images/modified/fractal_tree.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lena.csv" beforeDir="false" afterPath="$PROJECT_DIR$/lena.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pbmlib.csv" beforeDir="false" afterPath="$PROJECT_DIR$/pbmlib.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
@@ -345,7 +340,15 @@
       <option name="project" value="LOCAL" />
       <updated>1718232134413</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="huge update">
+      <option name="closed" value="true" />
+      <created>1718365340495</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1718365340495</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -360,7 +363,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Testing basics" />
     <MESSAGE value="4x4 blocking, without zig-zag and encoding" />
     <MESSAGE value="added p2 pgm saving" />
     <MESSAGE value="changed dct to scipy version" />
@@ -385,7 +387,8 @@
     <MESSAGE value="added testing file, csv data files" />
     <MESSAGE value="intro to speedup" />
     <MESSAGE value="plotting" />
-    <option name="LAST_COMMIT_MESSAGE" value="plotting" />
+    <MESSAGE value="huge update" />
+    <option name="LAST_COMMIT_MESSAGE" value="huge update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -4,20 +4,20 @@ import csv
 import compressor
 import helpers
 
-input_filepath = 'images\\samples\\lena.pgm'
+input_filepath = 'images\\samples\\fractal_tree.pgm'
 output_filepath = 'test_image.isa'
 
 test_image = compressor.open_image(input_filepath)
 
-csv_filename = 'lena.csv'
-
+csv_filename = 'fractal.csv'
+"""
 with open(csv_filename, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(
         ['Quality', 'Block Size', 'Avg Compression Time', 'Avg Saving Time', 'Avg Opening Time', 'MSE', 'PSNR',
          'Compressed Size'])
-
-for quality in range(1, 101):
+"""
+for quality in range(65, 101):
     for block_size in range(1, 65):
         compression_time, saving_time = compressor.save_isa_testing(output_filepath, test_image, quality,
                                                                     block_size)
